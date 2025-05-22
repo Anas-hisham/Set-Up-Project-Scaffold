@@ -1,11 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron')
+// const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld('myAPI', {
-  sendMessage: (msg) => {
-    try {
-      ipcRenderer.send('message', msg)
-    } catch (err) {
-      console.error('IPC error:', err)
-    }
-  },
-})
+// contextBridge.exposeInMainWorld('myAPI', {
+//   saveTeams: (data) => ipcRenderer.invoke('save-teams', data),
+//   loadTeams: () => ipcRenderer.invoke('load-teams'),
+// })

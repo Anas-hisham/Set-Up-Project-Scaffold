@@ -1,6 +1,6 @@
 <template>
-  <!-- <BracketView /> -->
-  <!-- <PlayersStatsView /> -->
+  <BracketView />
+  <PlayersStatsView />
   <TodaysMatchesView />
 </template>
 

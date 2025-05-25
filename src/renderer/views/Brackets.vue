@@ -35,7 +35,7 @@ const createTeam = () => ({
   image: '',
   flag: '',
   name: '',
-  score: 0,
+  score: '',
 })
 
 const teamsLoop = () => {

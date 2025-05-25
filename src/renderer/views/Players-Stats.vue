@@ -10,7 +10,7 @@
             type="text"
             v-model="player.name"
             placeholder="Player Name"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100 "
           />
         </div>
 
@@ -21,7 +21,7 @@
             type="text"
             v-model="player.team"
             placeholder="Team Name"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -32,7 +32,7 @@
             type="text"
             v-model="player.weapon"
             placeholder="Favorite Weapon"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -43,7 +43,7 @@
             type="number"
             v-model.number="player.economy"
             placeholder="Economy Score"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -58,7 +58,7 @@
             :ref="(el) => (heroRefs[index] = el)"
             @change="handleFileChange($event, index, 'hero')"
           />
-          <span class="text-sm">Hero Image</span>
+          <span class="text-sm opacity-65">Hero Image</span>
           <div v-if="player.hero" class="w-12 h-12">
             <img :src="player.hero" alt="Hero" class="w-full h-full object-cover" />
           </div>
@@ -78,7 +78,7 @@
             type="number"
             v-model.number="player.kills"
             placeholder="Kills"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -89,7 +89,7 @@
             type="number"
             v-model.number="player.deaths"
             placeholder="Deaths"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -100,7 +100,7 @@
             type="number"
             v-model.number="player.assists"
             placeholder="Assists"
-            class="outline-hidden pl-5 w-full"
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
       </div>

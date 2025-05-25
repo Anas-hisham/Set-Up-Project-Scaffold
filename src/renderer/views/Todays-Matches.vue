@@ -8,12 +8,12 @@
     </h2>
     <div class="bg-[#1f2937] p-4 mb-10">
       <div class="relative text-white">
-        <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white "></i>
         <input
           type="text"
           placeholder="Date"
           v-model="matchInfo.date"
-          class="pl-8 w-full bg-transparent border py-2 text-white"
+          class="pl-8 w-full bg-transparent border py-2 text-white  placeholder-white placeholder-opacity-100"
         />
       </div>
     </div>
@@ -34,19 +34,32 @@
             type="text"
             placeholder="Match Time"
             v-model="match.time"
-            class="pl-8 w-full bg-transparent border py-2 text-white"
+            class="pl-8 w-full bg-transparent border py-2 text-white  placeholder-white placeholder-opacity-100"
           />
         </div>
 
         <!-- Team Names -->
         <div class="grid grid-cols-2 gap-4">
-          <div class="text-start relative pl-8 w-full bg-transparent border py-2 text-white">
-            <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"> </i>
-            <span>Left Team Name</span>
+          <!-- Left Team Name Input -->
+          <div class="relative text-white">
+            <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+            <input
+              type="text"
+              placeholder="Left Team Name"
+              v-model="match.leftName"
+  class="pl-8 w-full bg-transparent border py-2 text-white placeholder-white placeholder-opacity-100"
+            />
           </div>
-          <div class="text-start relative pl-8 w-full bg-transparent border py-2 text-white">
-            <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"> </i>
-            <span>Right Team Name</span>
+
+          <!-- Right Team Name Input -->
+          <div class="relative text-white">
+            <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+            <input
+              type="text"
+              placeholder="Right Team Name"
+              v-model="match.rightName"
+              class="pl-8 w-full bg-transparent border py-2 text-white placeholder-white placeholder-opacity-100"
+            />
           </div>
         </div>
 
@@ -164,5 +177,8 @@ function uploadImage(event, matchIndex, field) {
 input[type='date'],
 input[type='time'] {
   color-scheme: dark;
+}
+input {
+  outline: none;
 }
 </style>

@@ -8,12 +8,12 @@
     </h2>
     <div class="bg-[#1f2937] p-4 mb-10">
       <div class="relative text-white">
-        <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white "></i>
+        <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
         <input
-          type="text"
+          type="date"
           placeholder="Date"
           v-model="matchInfo.date"
-          class="pl-8 w-full bg-transparent border py-2 text-white  placeholder-white placeholder-opacity-100"
+          class="pl-8 w-full bg-transparent border py-2 px-3 text-white placeholder-white placeholder-opacity-100"
         />
       </div>
     </div>
@@ -31,10 +31,10 @@
         <div class="relative text-white mb-8">
           <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
           <input
-            type="text"
+            type="time"
             placeholder="Match Time"
             v-model="match.time"
-            class="pl-8 w-full bg-transparent border py-2 text-white  placeholder-white placeholder-opacity-100"
+            class="pl-8 w-full bg-transparent border py-2 px-2.5 text-white placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -47,7 +47,7 @@
               type="text"
               placeholder="Left Team Name"
               v-model="match.leftName"
-  class="pl-8 w-full bg-transparent border py-2 text-white placeholder-white placeholder-opacity-100"
+              class="pl-8 w-full bg-transparent border py-2 text-white placeholder-white placeholder-opacity-100"
             />
           </div>
 
@@ -65,52 +65,84 @@
 
         <!-- Images -->
         <div class="grid grid-cols-2 gap-4">
-          <div
-            v-for="field in ['leftLogo', 'leftFlag']"
-            :key="field + matchIndex"
-            class="flex justify-between items-center border px-4 py-2 text-white"
-          >
-            <span class="opacity-60">{{
-              field === 'leftLogo' ? 'Left Team Logo' : 'Left Team Flag'
-            }}</span>
+          <!-- Left Logo -->
+          <div class="flex justify-between items-center border px-4 py-2 text-white">
+            <span class="opacity-60">Left Team Logo</span>
             <div>
               <input
                 type="file"
                 class="hidden"
-                :ref="(el) => setFileInputRef(matchIndex, field, el)"
-                @change="(e) => uploadImage(e, matchIndex, field)"
+                :ref="(el) => setFileInputRef(matchIndex, 'leftLogo', el)"
+                @change="(e) => uploadImage(e, matchIndex, 'leftLogo')"
               />
-              <img v-if="match[field]" :src="match[field]" class="w-8 h-8 object-cover" />
+              <img v-if="match.leftLogo" :src="match.leftLogo" class="w-8 h-8 object-cover" />
               <button
                 v-else
                 class="text-green-400 font-semibold cursor-pointer"
-                @click="triggerFileInput(matchIndex, field)"
+                @click="triggerFileInput(matchIndex, 'leftLogo')"
               >
                 + ADD
               </button>
             </div>
           </div>
 
-          <div
-            v-for="field in ['rightLogo', 'rightFlag']"
-            :key="field + matchIndex"
-            class="flex justify-between items-center border px-4 py-2 text-white"
-          >
-            <span class="opacity-60">{{
-              field === 'rightLogo' ? 'Right Team Logo' : 'Right Team Flag'
-            }}</span>
+          <!-- Right Logo -->
+          <div class="flex justify-between items-center border px-4 py-2 text-white">
+            <span class="opacity-60">Right Team Logo</span>
             <div>
               <input
                 type="file"
                 class="hidden"
-                :ref="(el) => setFileInputRef(matchIndex, field, el)"
-                @change="(e) => uploadImage(e, matchIndex, field)"
+                :ref="(el) => setFileInputRef(matchIndex, 'rightLogo', el)"
+                @change="(e) => uploadImage(e, matchIndex, 'rightLogo')"
               />
-              <img v-if="match[field]" :src="match[field]" class="w-8 h-8 object-cover" />
+              <img v-if="match.rightLogo" :src="match.rightLogo" class="w-8 h-8 object-cover" />
               <button
                 v-else
                 class="text-green-400 font-semibold cursor-pointer"
-                @click="triggerFileInput(matchIndex, field)"
+                @click="triggerFileInput(matchIndex, 'rightLogo')"
+              >
+                + ADD
+              </button>
+            </div>
+          </div>
+
+          <!-- Left Flag -->
+          <div class="flex justify-between items-center border px-4 py-2 text-white">
+            <span class="opacity-60">Left Team Flag</span>
+            <div>
+              <input
+                type="file"
+                class="hidden"
+                :ref="(el) => setFileInputRef(matchIndex, 'leftFlag', el)"
+                @change="(e) => uploadImage(e, matchIndex, 'leftFlag')"
+              />
+              <img v-if="match.leftFlag" :src="match.leftFlag" class="w-8 h-8 object-cover" />
+              <button
+                v-else
+                class="text-green-400 font-semibold cursor-pointer"
+                @click="triggerFileInput(matchIndex, 'leftFlag')"
+              >
+                + ADD
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Flag -->
+          <div class="flex justify-between items-center border px-4 py-2 text-white">
+            <span class="opacity-60">Right Team Flag</span>
+            <div>
+              <input
+                type="file"
+                class="hidden"
+                :ref="(el) => setFileInputRef(matchIndex, 'rightFlag', el)"
+                @change="(e) => uploadImage(e, matchIndex, 'rightFlag')"
+              />
+              <img v-if="match.rightFlag" :src="match.rightFlag" class="w-8 h-8 object-cover" />
+              <button
+                v-else
+                class="text-green-400 font-semibold cursor-pointer"
+                @click="triggerFileInput(matchIndex, 'rightFlag')"
               >
                 + ADD
               </button>
@@ -171,6 +203,8 @@ function uploadImage(event, matchIndex, field) {
   }
   reader.readAsDataURL(file)
 }
+console.log(matches);
+
 </script>
 
 <style>

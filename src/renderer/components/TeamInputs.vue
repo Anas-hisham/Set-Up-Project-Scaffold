@@ -63,7 +63,7 @@
     <div class="text-white px-4 py-3 border relative">
       <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
       <input
-        type="text"
+        type="number"
         v-model.number="team.score"
         placeholder="Team Score"
         class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"

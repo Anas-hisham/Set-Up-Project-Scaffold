@@ -1,17 +1,11 @@
 <template>
-  <BracketView />
-  <PlayersStatsView />
-  <TodaysMatchesView />
+<MainApp/>
 </template>
 
 <script setup>
-import BracketView from './views/Brackets.vue'
-import PlayersStatsView from './views/Players-Stats.vue'
-import TodaysMatchesView from './views/Todays-Matches.vue'
+import MainApp from './MainApp.vue';
+
+
 </script>
 
-<style>
-body {
-  background-color: #2a3444;
-}
-</style>
+

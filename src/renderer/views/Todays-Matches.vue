@@ -155,7 +155,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 const matchInfo = ref({ date: '' })
 
@@ -203,8 +203,44 @@ function uploadImage(event, matchIndex, field) {
   }
   reader.readAsDataURL(file)
 }
-console.log(matches);
 
+async function saveData() {
+  try {
+    const dataToSave = JSON.stringify({
+      matchInfo: matchInfo.value,
+      matches: matches.value,
+    })
+    const result = await window.myAPI.saveMatches(dataToSave)
+    if (!result.success) {
+      console.error('Failed to save data:', result.error)
+    }
+  } catch (e) {
+    console.error('Save error:', e)
+  }
+}
+
+// Load data from Electron backend
+async function loadData() {
+  try {
+    const loaded = await window.myAPI.loadMatches()
+    if (loaded.matchInfo) matchInfo.value = loaded.matchInfo
+    if (loaded.matches) matches.value = loaded.matches
+  } catch (e) {
+    console.error('Load error:', e)
+  }
+}
+
+watch(
+  [matchInfo, matches],
+  () => {
+    saveData()
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <style>

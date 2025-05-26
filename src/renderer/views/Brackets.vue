@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
 
 const teams = ref([])
@@ -35,7 +35,7 @@ const createTeam = () => ({
   image: '',
   flag: '',
   name: '',
-  score: '',
+  score: 0,
 })
 
 const teamsLoop = () => {
@@ -79,14 +79,10 @@ function triggerFileInput(refsArray, index) {
 }
 
 // Save and Load Data
-/*
+
 async function saveTeams() {
-  const result = await window.myAPI.saveTeams(JSON.stringify(teams.value))
-  if (result.success) {
-    alert('Teams saved!')
-  } else {
-    alert('Failed to save teams: ' + result.error)
-  }
+  await window.myAPI.saveTeams(JSON.stringify(teams.value))
+
 }
 
 async function loadTeams() {
@@ -104,11 +100,18 @@ async function loadTeams() {
     console.error('Failed to load teams:', e)
   }
 }
-*/
+
+watch(
+  teams,
+  () => {
+    saveTeams()
+  },
+  { deep: true },
+)
 
 onMounted(() => {
   teamsLoop()
-  // loadTeams()
+  loadTeams()
 })
 </script>
 

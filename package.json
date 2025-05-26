@@ -10,7 +10,8 @@
     "electron": "cross-env NODE_ENV=development electronmon . --watch src/main/index.js",
     "preview": "npm run build && cross-env NODE_ENV=production electron .",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "dist": "npm run build && electron-builder"
   },
   "dependencies": {
     "pinia": "^3.0.1",
@@ -26,6 +27,7 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^36.2.1",
+    "electron-builder": "^26.0.12",
     "electronmon": "^2.0.3",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "~10.0.0",
@@ -35,5 +37,41 @@
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.yourcompany.trygl",
+    "productName": "Try GL",
+    "copyright": "Copyright © 2025",
+    "files": [
+      "dist/**",
+      "src/main/**",
+      "src/preload.js",
+      "node_modules/**",
+      "package.json"
+    ],
+    "extraResources": [],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Try GL",
+      "uninstallDisplayName": "Try GL"
+    }
   }
 }

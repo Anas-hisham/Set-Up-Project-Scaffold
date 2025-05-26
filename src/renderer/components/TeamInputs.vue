@@ -21,7 +21,7 @@
         class="text-green-400 font-semibold cursor-pointer"
         @click="() => triggerFileInput(imageRefs, index)"
       >
-        + ADD
+        ADD +
       </button>
     </div>
 
@@ -43,7 +43,7 @@
         class="text-green-400 font-semibold cursor-pointer"
         @click="() => triggerFileInput(flagRefs, index)"
       >
-        + ADD
+        ADD +
       </button>
     </div>
 

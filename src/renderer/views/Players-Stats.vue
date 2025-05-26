@@ -10,7 +10,7 @@
             type="text"
             v-model="player.name"
             placeholder="Player Name"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100 "
+            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
           />
         </div>
 
@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { watch, onMounted, ref } from 'vue'
 
 const players = ref([
   {
@@ -142,4 +142,34 @@ function handleFileChange(event, index, type) {
     reader.readAsDataURL(file)
   }
 }
+
+async function savePlayers() {
+  try {
+    const result = await window.myAPI.savePlayer(JSON.stringify(players.value))
+    if (!result.success) {
+      console.error('Failed to save players:', result.error)
+    }
+  } catch (err) {
+    console.error('Error saving players:', err)
+  }
+}
+
+watch(
+  players,
+  () => {
+    savePlayers()
+  },
+  { deep: true },
+)
+
+onMounted(async () => {
+  try {
+    const loadedPlayers = await window.myAPI.loadPlayer()
+    if (Array.isArray(loadedPlayers) && loadedPlayers.length) {
+      players.value = loadedPlayers
+    }
+  } catch (err) {
+    console.error('Error loading players:', err)
+  }
+})
 </script>

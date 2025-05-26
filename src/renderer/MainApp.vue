@@ -1,55 +1,56 @@
 <template>
-  <div class="app-container flex h-screen flex-col">
-    <!-- Toolbar -->
+  <div
+    :class="[
+      'app-container flex h-screen flex-col transition-colors duration-500',
+      settings.displayMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black',
+    ]"
+  >
     <AppToolbar
       :currentTitle="views[selectedIndex]?.title || 'No View Selected'"
-      :refreshView="refreshView"
       :openSettings="openSettings"
+      :displayMode="settings.displayMode"
     />
 
-    <!-- Main layout -->
-    <div class="grid grid-cols-12">
-      <SideNav v-model:selectedIndex="selectedIndex" :views="visibleViews" :selected="selected" />
+    <div class="grid grid-cols-15 flex-grow">
+      <SideNav
+        v-model:selectedIndex="selectedIndex"
+        :views="views.filter((view) => view.title !== 'Settings')"
+        :selected="selected"
+        :navMode="settings.navMode"
+        :displayMode="settings.displayMode"
+      />
 
       <main
-        class="main-content col-span-9 lg:col-span-10 text-white p-6 bg-[#2a3444] min-h-[calc(100vh)]"
+        :class="[
+          'main-content p-6 min-h-full transition-colors duration-500',
+          settings.navMode === 'full' ? 'col-span-12 lg:col-span-13' : 'col-span-14 lg:col-span-14',
+          settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black',
+        ]"
       >
-        <!-- Manual if-else blocks to show the selected view -->
-        <BracketView v-if="selectedIndex === 0" />
-        <PlayersStatsView v-else-if="selectedIndex === 1" />
-        <TodaysMatchesView v-else-if="selectedIndex === 2" />
+        <BracketView v-if="selectedIndex === 0" :displayMode="settings.displayMode" />
+        <PlayersStatsView v-else-if="selectedIndex === 1" :displayMode="settings.displayMode" />
+        <TodaysMatchesView v-else-if="selectedIndex === 2" :displayMode="settings.displayMode" />
         <SettingsView
           v-else-if="selectedIndex === 3"
-          :views="views"
-          :onViewsChange="handleViewChange"
+          :settings="settings"
+          :setSettings="setSettings"
+          :resetSettings="resetSettings"
         />
-        <div v-else class="text-center text-gray-400 mt-20">
-          No view selected or component not available.
-        </div>
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
-import AppToolbar from './components/AppToolbar.vue'
 import SideNav from './components/SideNav.vue'
+import AppToolbar from './components/AppToolbar.vue'
 
 import BracketView from './views/Brackets.vue'
 import PlayersStatsView from './views/Players-Stats.vue'
 import TodaysMatchesView from './views/Todays-Matches.vue'
 import SettingsView from './views/Settings.vue'
-
-const views = ref([
-  { title: 'Bracket View', visible: true },
-  { title: 'Players Stats', visible: true },
-  { title: "Today's Matches", visible: true },
-  { title: 'Settings', visible: false },
-])
-
-const visibleViews = computed(() => views.value.filter((view) => view.visible))
 
 const selectedIndex = ref(0)
 
@@ -57,50 +58,66 @@ function selected(index) {
   selectedIndex.value = index
 }
 
-function handleViewChange(updatedViews) {
-  views.value = updatedViews
-
-  if (window.api?.saveViewSettings) {
-    window.api.saveViewSettings(JSON.stringify(updatedViews, null, 2))
-  }
+const defaultSettings = {
+  displayMode: 'dark',
+  navMode: 'full',
+  savePath: '',
 }
 
-function refreshView() {
-  for (let i = 0; i < views.value.length; i++) {
-    if (views.value[i].title !== 'Settings') {
-      views.value[i].visible = true
+const settings = ref({ ...defaultSettings })
+
+// Load settings from Electron on mount
+onMounted(async () => {
+  try {
+    const savedSettings = await window.myAPI.getViewSettings()
+    if (savedSettings) {
+      settings.value = { ...defaultSettings, ...savedSettings }
     }
+  } catch (err) {
+    console.error('Failed to load settings:', err)
   }
+})
 
-  if (window.api?.saveViewSettings) {
-    window.api.saveViewSettings(JSON.stringify(views.value, null, 2))
-  }
-}
-
+// Watch settings deeply and save whenever changed
 watch(
-  views,
-  () => {
-    if (window.api?.saveViewSettings) {
-      window.api.saveViewSettings(JSON.stringify(views, null, 2))
+  settings,
+  async (newSettings) => {
+    try {
+      // Convert reactive to plain object before sending
+      const plainSettings = JSON.parse(JSON.stringify(newSettings))
+      await window.myAPI.saveViewSettings(plainSettings)
+    } catch (err) {
+      console.error('Failed to save settings:', err)
     }
   },
   { deep: true },
 )
 
-function openSettings() {
-  const index = views.value.findIndex((v) => v.title === 'Settings')
-  selectedIndex.value = index
+function setSettings(newSettings) {
+  settings.value = { ...settings.value, ...newSettings }
 }
 
-onMounted(async () => {
-  try {
-    const savedViews = await window.api.getViewSettings()
-    views.value = savedViews
-    console.log(views.value)
-  } catch (e) {
-    console.error('Error loading view settings:', e)
+function resetSettings() {
+  settings.value = { ...defaultSettings }
+}
+const previousIndex = ref(0)
+
+function openSettings() {
+  const settingsIndex = views.findIndex((v) => v.title === 'Settings')
+  if (selectedIndex.value === settingsIndex) {
+    selectedIndex.value = previousIndex.value
+  } else {
+    previousIndex.value = selectedIndex.value
+    selectedIndex.value = settingsIndex
   }
-})
+}
+
+const views = [
+  { title: "Bracket's View", component: BracketView },
+  { title: 'Players Stats', component: PlayersStatsView },
+  { title: "Today's Matches", component: TodaysMatchesView },
+  { title: 'Settings', component: SettingsView },
+]
 </script>
 
 <style>

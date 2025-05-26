@@ -1,70 +1,145 @@
 <template>
-  <h1 class="mt-12 text-4xl font-bold text-center text-white">Player Stats</h1>
+  <h1
+    class="mt-12 text-4xl font-bold text-center"
+    :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+  >
+    Player Stats
+  </h1>
   <div class="flex justify-center py-10 px-4">
     <div class="w-full grid gap-4">
       <div v-for="(player, index) in players" :key="index" class="grid gap-7 p-4 -lg">
         <!-- Player Name -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="text"
             v-model="player.name"
             placeholder="Player Name"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
 
         <!-- Team Name -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="text"
             v-model="player.team"
             placeholder="Team Name"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
 
         <!-- Favorite Weapon -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="text"
             v-model="player.weapon"
             placeholder="Favorite Weapon"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
 
         <!-- Economy Score -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="number"
             v-model.number="player.economy"
             placeholder="Economy Score"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
-
         <!-- Hero Image -->
         <div
-          class="flex justify-between bg-transparent border px-4 h-14 items-center gap-3 text-white"
+          class="flex justify-between border px-4 h-14 items-center gap-3"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
         >
           <input
-            v-if="!player.hero"
             type="file"
             class="hidden"
             :ref="(el) => (heroRefs[index] = el)"
             @change="handleFileChange($event, index, 'hero')"
           />
           <span class="text-sm opacity-65">Hero Image</span>
-          <div v-if="player.hero" class="w-12 h-12">
-            <img :src="player.hero" alt="Hero" class="w-full h-full object-cover" />
+
+          <div v-if="player.hero" class="flex items-center gap-2">
+            <img
+              :src="player.hero"
+              alt="Hero"
+              class="w-12 h-12 object-cover cursor-pointer rounded"
+              @click="() => triggerFileInput(heroRefs, index)"
+              title="Click to change image"
+            />
+            <button
+              type="button"
+              class="text-red-500 font-semibold hover:underline"
+              @click="() => deleteHeroImage(index)"
+              title="Delete image"
+            >
+              Delete
+            </button>
           </div>
+
           <button
             v-else
-            class="text-green-400 font-semibold cursor-pointer"
+            class="font-semibold cursor-pointer"
+            :class="props.displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
             @click="() => triggerFileInput(heroRefs, index)"
           >
             + ADD
@@ -72,44 +147,101 @@
         </div>
 
         <!-- Kills -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="number"
             v-model.number="player.kills"
             placeholder="Kills"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
 
         <!-- Deaths -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="number"
             v-model.number="player.deaths"
             placeholder="Deaths"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
 
         <!-- Assists -->
-        <div class="text-white px-4 py-3 border relative">
-          <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 text-white"></i>
+        <div
+          class="px-4 py-3 border relative"
+          :class="
+            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+          "
+        >
+          <i
+            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+          ></i>
           <input
             type="number"
             v-model.number="player.assists"
             placeholder="Assists"
-            class="outline-hidden pl-5 w-full placeholder-white placeholder-opacity-100"
+            class="outline-hidden pl-5 w-full"
+            :class="
+              props.displayMode === 'dark'
+                ? 'placeholder-white text-white'
+                : 'placeholder-black text-black'
+            "
           />
         </div>
       </div>
     </div>
   </div>
+  <div class="flex justify-center mt-3">
+    <button
+      @click="saveAndAlertPlayers"
+      class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+    >
+      Save Players
+    </button>
+  </div>
 </template>
 
 <script setup>
 import { watch, onMounted, ref } from 'vue'
+function deleteHeroImage(index) {
+  players.value[index].hero = null
+}
+
+const props = defineProps({
+  displayMode: {
+    type: String,
+    default: 'light',
+  },
+})
 
 const players = ref([
   {
@@ -142,17 +274,29 @@ function handleFileChange(event, index, type) {
     reader.readAsDataURL(file)
   }
 }
+async function saveAndAlertPlayers() {
+  try {
+    const result = await savePlayers()
+    if (result.success) {
+      alert('Players saved successfully!')
+    } else {
+      alert('Failed to save players: ' + result.error)
+    }
+  } catch (err) {
+    alert('Error saving players: ' + err.message)
+  }
+}
 
 async function savePlayers() {
   try {
     const result = await window.myAPI.savePlayer(JSON.stringify(players.value))
-    if (!result.success) {
-      console.error('Failed to save players:', result.error)
-    }
+    return result // <-- Add this line
   } catch (err) {
     console.error('Error saving players:', err)
+    return { success: false, error: err.message } // <-- Graceful fallback
   }
 }
+
 
 watch(
   players,

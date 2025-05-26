@@ -1,6 +1,11 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <h1 class="mt-12 text-4xl font-bold text-center text-white">Welcome to Stream Buddy</h1>
+  <h1
+    class="mt-12 text-4xl font-bold text-center"
+    :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+  >
+    Bracket’s view
+  </h1>
   <div class="flex justify-center py-10 px-4">
     <div class="w-full grid gap-2">
       <TeamInputs
@@ -12,22 +17,29 @@
         :flagRefs="flagRefs"
         :handleFileChange="handleFileChange"
         :triggerFileInput="triggerFileInput"
+        :displayMode="displayMode"
       />
     </div>
   </div>
-  <!-- <div class="flex justify-center mb-6">
+  <div class="flex justify-center mb-10">
     <button
-      class="px-6 py-3 bg-white text-black font-bold rounded-md cursor-pointer transition duration-300 hover:bg-gray-200"
-      @click="saveTeams"
+      @click="saveAndAlertPlayers"
+      class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
     >
       Save Teams
     </button>
-  </div> -->
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
+
+defineProps({
+  displayMode: {
+    type: String,
+  },
+})
 
 const teams = ref([])
 
@@ -52,37 +64,41 @@ const flagRefs = []
 function handleFileChange(event, index, type) {
   const file = event.target.files[0]
   if (file) {
-    //  built-in JavaScript object that lets you read file contents from input type="file" (like images, PDFs, etc.) on the frontend
     const reader = new FileReader()
     reader.onload = () => {
-      // reader.result: This contains the base64 string version of the file
       teams.value[index][type] = reader.result
     }
-    /*
-    This tells the FileReader to start reading the file.
-    It converts the file into a base64 encoded string (a Data URL).
-    When done, it triggers the onload function above.
-    */
     reader.readAsDataURL(file)
   }
-  /*
-    Summary:
-
-    Takes a file (like an image).
-    Reads it using FileReader and converts it into a base64 string.
-    When reading is finished, it updates the teams array (probably a Vue reactive object) at the given index and type with the file content.
-  */
 }
 
 function triggerFileInput(refsArray, index) {
   refsArray[index]?.click()
 }
 
-// Save and Load Data
-
 async function saveTeams() {
-  await window.myAPI.saveTeams(JSON.stringify(teams.value))
+  try {
+    const result = await window.myAPI.saveTeams(JSON.stringify(teams.value))
+    return result // Return the result so saveAndAlertPlayers can check it
+  } catch (e) {
+    console.error('Error saving teams:', e)
+    return { success: false, error: e.message || 'Unknown error' } // Return failure object
+  }
+}
 
+async function saveAndAlertPlayers() {
+  try {
+    const result = await saveTeams()
+    if (result.success) {
+      alert('Players saved successfully!')
+    } else {
+      alert('Failed to save players: ' + result.error)
+      console.error('Failed to save players:', result.error)
+    }
+  } catch (err) {
+    alert('Error saving players: ' + err.message)
+    console.error('Error saving players:', err)
+  }
 }
 
 async function loadTeams() {

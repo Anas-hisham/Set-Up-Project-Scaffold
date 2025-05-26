@@ -14,5 +14,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
   saveViewSettings: (data) => ipcRenderer.invoke('save-settings', data),
   getViewSettings: () => ipcRenderer.invoke('get-settings'),
+  clearDataFile: () => ipcRenderer.invoke('clear-data'),
 })
+
 

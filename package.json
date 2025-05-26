@@ -1,6 +1,6 @@
 {
   "name": "try-gl",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "src/main/index.js",
@@ -37,8 +37,8 @@
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "wait-on": "^8.0.3"
-  },
-  "build": {
+  }
+  ,"build": {
     "appId": "com.yourcompany.trygl",
     "productName": "Try GL",
     "copyright": "Copyright © 2025",

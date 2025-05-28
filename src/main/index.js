@@ -4,61 +4,63 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import Store from 'electron-store'
-const store = new Store()
 
+const store = new Store()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const jsonFolderPath = path.join(app.getPath('userData'), 'jsons')
-console.log(path.join(app.getPath('userData'), 'jsons'));
+// Start with stored or default path
 
+let customSavePath = store.get('customSavePath') || app.getPath('userData')
 
-// Ensure the jsons directory exists
-if (!fs.existsSync(jsonFolderPath)) {
-  fs.mkdirSync(jsonFolderPath, { recursive: true })
+if (store.get('customSavePath') === null || undefined || "") {
+  customSavePath = app.getPath('userData');
+}
+console.log(customSavePath);
+
+// Folder paths - updated dynamically
+let jsonFolderPath
+let playerImageFolder
+let matchImageFolder
+let teamsImageFolder
+
+// Create or update folder paths and ensure folders exist
+function ensureFoldersExist(basePath) {
+  jsonFolderPath = path.join(basePath, 'jsons')
+  playerImageFolder = path.join(basePath, 'players-images')
+  matchImageFolder = path.join(basePath, 'match-images')
+  teamsImageFolder = path.join(basePath, 'brackets-images')
+
+  for (const folder of [jsonFolderPath, playerImageFolder, matchImageFolder, teamsImageFolder]) {
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder, { recursive: true })
+    }
+  }
 }
 
-const playerImageFolder = path.join(app.getPath('userData'), 'players-images')
+// Initialize folders at startup
+ensureFoldersExist(customSavePath)
 
-if (!fs.existsSync(playerImageFolder)) {
-  fs.mkdirSync(playerImageFolder, { recursive: true })
+// Return current JSON file paths
+function getFilePaths() {
+  return {
+    teamsFilePath: path.join(jsonFolderPath, 'Brackets.json'),
+    playersFilePath: path.join(jsonFolderPath, 'PlayersStats.json'),
+    matchesFilePath: path.join(jsonFolderPath, 'TodaysMatches.json'),
+  }
 }
 
-
-const matchImageFolder = path.join(app.getPath('userData'), 'match-images')
-
-if (!fs.existsSync(matchImageFolder)) {
-  fs.mkdirSync(matchImageFolder, { recursive: true })
-}
-
-
-
-const teamsImageFolder = path.join(app.getPath('userData'), 'brackets-images')
-
-if (!fs.existsSync(teamsImageFolder)) {
-  fs.mkdirSync(teamsImageFolder, { recursive: true })
-}
-
-
-
-const teamsFilePath = path.join(jsonFolderPath, 'Brackets.json')
-const playersFilePath = path.join(jsonFolderPath, 'PlayersStats.json')
-const matchesFilePath = path.join(jsonFolderPath, 'TodaysMatches.json')
-// const settingsPath = path.join(jsonFolderPath, 'settings.json')
-
+// Create main window
 function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-
       nodeIntegration: false,
     },
   })
 
-  const isDev = process.env.NODE_ENV === 'development'
-
-  if (isDev) {
+  if (process.env.NODE_ENV === 'development') {
     win.loadURL('http://localhost:5173')
     win.webContents.openDevTools()
   } else {
@@ -66,74 +68,69 @@ function createWindow() {
   }
 }
 
-// Teams
+// IPC handler to set custom save path and recreate folders
+ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
+  try {
+    if (!fs.existsSync(newPath)) {
+      fs.mkdirSync(newPath, { recursive: true })
+    }
+    store.set('customSavePath', newPath)
+    customSavePath = newPath
+    ensureFoldersExist(customSavePath)
 
-ipcMain.handle('load-teams-cache', () => {
-  return store.get('teamsCache')
+    return { success: true }
+  } catch (error) {
+    console.error('Error setting custom save path:', error)
+    return { success: false, error: error.message }
+  }
 })
 
+// Load and save teams cache
+ipcMain.handle('load-teams-cache', () => store.get('teamsCache'))
+
 ipcMain.handle('save-teams-cache', (_event, data) => {
-  store.set('teamsCache', JSON.parse(data));
-  return true;
-});
+  store.set('teamsCache', JSON.parse(data))
+  return true
+})
 
-
+// Save teams with image processing
 ipcMain.handle('save-teams', async (_event, data) => {
   try {
+    const { teamsFilePath } = getFilePaths()
     const teams = JSON.parse(data)
-
     for (const team of teams) {
       for (const field of ['image', 'flag']) {
         if (team[field] && team[field].startsWith('data:image')) {
-          const ext = team[field].substring(
-            team[field].indexOf('/') + 1,
-            team[field].indexOf(';')
-          )
+          const ext = team[field].substring(team[field].indexOf('/') + 1, team[field].indexOf(';'))
           const base64Data = team[field].split(',')[1]
           const filename = `team-${Date.now()}-${field}.${ext}`
           const filePath = path.join(teamsImageFolder, filename)
           fs.writeFileSync(filePath, base64Data, 'base64')
-
-          // Replace base64 string with local absolute file path
           team[field] = filePath
         }
       }
     }
-
     fs.writeFileSync(teamsFilePath, JSON.stringify(teams, null, 2), 'utf-8')
     return { success: true }
-  } catch (err) {
-    console.error('Error saving teams:', err)
-    return { success: false, error: err.message }
+  } catch (error) {
+    console.error('Error saving teams:', error)
+    return { success: false, error: error.message }
   }
 })
 
-// ipcMain.handle('load-teams', async () => {
-//   try {
-//     if (!fs.existsSync(teamsFilePath)) return []
-//     const raw = fs.readFileSync(teamsFilePath, 'utf-8')
-//     return JSON.parse(raw)
-//   } catch (err) {
-//     console.error('Error loading teams:', err)
-//     return []
-//   }
-// })
+// Load and save player cache
+ipcMain.handle('load-player-cache', () => store.get('playerCache'))
 
-// Players
-
-ipcMain.handle('load-player-cache', () => {
-  return store.get('playerCache')
+ipcMain.handle('save-player-cache', (_event, data) => {
+  store.set('playerCache', JSON.parse(data))
+  return true
 })
 
-ipcMain.handle('save-player-cache', (event, data) => {
-  store.set('playerCache', JSON.parse(data));
-  return true;
-});
-
-ipcMain.handle('save-player', async (event, data) => {
+// Save players with hero image processing
+ipcMain.handle('save-player', async (_event, data) => {
   try {
+    const { playersFilePath } = getFilePaths()
     const players = JSON.parse(data)
-
     for (const player of players) {
       if (player.hero && player.hero.startsWith('data:image')) {
         const ext = player.hero.substring(player.hero.indexOf('/') + 1, player.hero.indexOf(';'))
@@ -141,13 +138,10 @@ ipcMain.handle('save-player', async (event, data) => {
         const filename = `hero-${Date.now()}.${ext}`
         const filePath = path.join(playerImageFolder, filename)
         fs.writeFileSync(filePath, base64Data, 'base64')
-
         player.hero = filePath
       }
     }
-
     fs.writeFileSync(playersFilePath, JSON.stringify(players, null, 2), 'utf-8')
-
     return { success: true }
   } catch (error) {
     console.error('Error saving players:', error)
@@ -155,37 +149,20 @@ ipcMain.handle('save-player', async (event, data) => {
   }
 })
 
-
-
-
-// ipcMain.handle('load-player', async () => {
-//   try {
-//     if (!fs.existsSync(playersFilePath)) return []
-//     const raw = fs.readFileSync(playersFilePath, 'utf-8')
-//     return JSON.parse(raw)
-//   } catch (err) {
-//     console.error('Error loading players:', err)
-//     return []
-//   }
-// })
-
-// Matches
-
-ipcMain.handle('load-matches-cache', () => {
-  return store.get('matchesCache')
-})
+// Load and save matches cache
+ipcMain.handle('load-matches-cache', () => store.get('matchesCache'))
 
 ipcMain.handle('save-matches-cache', (_event, data) => {
-  store.set('matchesCache', JSON.parse(data));
-  return true;
-});
+  store.set('matchesCache', JSON.parse(data))
+  return true
+})
 
-
+// Save matches with image processing
 ipcMain.handle('save-matches', async (_event, data) => {
   try {
+    const { matchesFilePath } = getFilePaths()
     const parsed = JSON.parse(data)
     const matches = parsed.matches
-
     for (const match of matches) {
       for (const field of ['leftLogo', 'rightLogo', 'leftFlag', 'rightFlag']) {
         if (match[field] && match[field].startsWith('data:image')) {
@@ -194,117 +171,56 @@ ipcMain.handle('save-matches', async (_event, data) => {
           const filename = `match-${Date.now()}-${field}.${ext}`
           const filePath = path.join(matchImageFolder, filename)
           fs.writeFileSync(filePath, base64Data, 'base64')
-
-          // Save absolute local path in JSON
           match[field] = filePath
         }
       }
     }
-
-    // Save final match object with local image paths
     fs.writeFileSync(matchesFilePath, JSON.stringify({ ...parsed, matches }, null, 2), 'utf-8')
     return { success: true }
-  } catch (err) {
-    console.error('Error saving matches:', err)
-    return { success: false, error: err.message }
+  } catch (error) {
+    console.error('Error saving matches:', error)
+    return { success: false, error: error.message }
   }
 })
 
-
-// ipcMain.handle('load-matches', async () => {
-//   try {
-//     if (!fs.existsSync(matchesFilePath)) return []
-//     const raw = fs.readFileSync(matchesFilePath, 'utf-8')
-//     return JSON.parse(raw)
-//   } catch (err) {
-//     console.error('Error loading matches:', err)
-//     return []
-//   }
-// })
-
-// Settings
-
-
+// Save and get settings cache
 ipcMain.handle('save-settings-cache', async (_event, data) => {
   try {
-    store.set('settingsCache', data);
-    return true;
-  } catch (err) {
-    console.error('Error saving settings:', err);
-    return { success: false, error: err.message };
+    store.set('settingsCache', data)
+    return true
+  } catch (error) {
+    console.error('Error saving settings:', error)
+    return { success: false, error: error.message }
   }
-});
-
-ipcMain.handle('get-settings-cache', async () => {
-  return store.get('settingsCache')
-
 })
 
+ipcMain.handle('get-settings-cache', async () => store.get('settingsCache'))
+
+// Clear data cache by deleting JSON files
 ipcMain.handle('clear-data-cache', async () => {
   try {
-    const filesToDelete = [teamsFilePath, playersFilePath, matchesFilePath,
-      // settingsPath
-    ]
-
-    for (const file of filesToDelete) {
-      if (fs.existsSync(file)) {
-        fs.unlinkSync(file)
-      }
-    }
+    // Clear the cached keys in electron-store (without deleting JSON files)
+    store.delete('teamsCache')
+    store.delete('playerCache')
+    store.delete('matchesCache')
+    store.delete('settingsCache')
+    store.delete('customSavePath')
 
     return { success: true }
-  } catch (err) {
-    console.error('Error clearing data:', err)
-    return { success: false, error: err.message }
+  } catch (error) {
+    console.error('Error clearing cache:', error)
+    return { success: false, error: error.message }
   }
 })
 
 
-// ipcMain.handle('save-settings', async (_event, data) => {
-//   try {
-//     fs.writeFileSync(settingsPath, JSON.stringify(data), 'utf-8')
-//     return { success: true }
-//   } catch (err) {
-//     console.error('Error saving settings:', err)
-//     return { success: false, error: err.message }
-//   }
-// })
-
-// ipcMain.handle('get-settings', async () => {
-//   try {
-//     if (!fs.existsSync(settingsPath)) return null
-//     const data = fs.readFileSync(settingsPath, 'utf-8')
-//     return JSON.parse(data)
-//   } catch (err) {
-//     console.error('Error reading settings:', err)
-//     return null
-//   }
-// })
-
-// ipcMain.handle('clear-data', async () => {
-//   try {
-//     const filesToDelete = [teamsFilePath, playersFilePath, matchesFilePath, settingsPath]
-
-//     for (const file of filesToDelete) {
-//       if (fs.existsSync(file)) {
-//         fs.unlinkSync(file)
-//       }
-//     }
-
-//     return { success: true }
-//   } catch (err) {
-//     console.error('Error clearing data:', err)
-//     return { success: false, error: err.message }
-//   }
-// })
-
-
+// Ready event
 app.whenReady()
   .then(() => {
     console.log('App is ready')
     createWindow()
   })
-  .catch(err => {
-    console.error('Error during app start:', err)
-  })
 
+  .catch((error) => {
+    console.error('Error during app start:', error)
+  })

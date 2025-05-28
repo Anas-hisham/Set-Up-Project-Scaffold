@@ -79,15 +79,9 @@ function triggerFileInput(refsArray, index) {
 
 async function saveTeams() {
   try {
-    const result = await window.myAPI.saveTeams(JSON.stringify(teams.value))
-    if (result.success) {
-      alert('Players saved successfully!')
-    } else {
-      alert('Failed to save players: ' + result.error)
-      console.error('Failed to save players:', result.error)
-    }
+     await window.myAPI.saveTeams(JSON.stringify(teams.value))
+
   } catch (err) {
-    alert('Error saving players: ' + err.message)
     console.error('Error saving players:', err)
   }
 }

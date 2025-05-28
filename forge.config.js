@@ -43,4 +43,17 @@ export default {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'Anas-hisham', // Replace with your GitHub username if different
+          name: 'Set-Up-Project-Scaffold', // Repo name from your GitHub link
+        },
+        prerelease: false,
+        draft: true,
+      },
+    },
+  ],
 };

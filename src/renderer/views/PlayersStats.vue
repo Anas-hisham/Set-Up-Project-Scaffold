@@ -230,8 +230,6 @@
   </div>
 </template>
 
-
-
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 
@@ -269,8 +267,7 @@ function handleFileChange(event, index, type) {
     const reader = new FileReader()
     reader.onload = () => {
       players.value[index][type] = reader.result // base64 sent to main process
-      console.log(reader.result);
-
+      console.log(reader.result)
     }
     reader.readAsDataURL(file)
   }
@@ -282,14 +279,9 @@ function deleteHeroImage(index) {
 
 async function savePlayers() {
   try {
-const result = await window.myAPI.savePlayer(JSON.stringify(players.value))
-    if (result.success) {
-      alert('Players saved successfully!')
-    } else {
-      alert('Failed to save players: ' + result.error)
-    }
+    await window.myAPI.savePlayer(JSON.stringify(players.value))
   } catch (err) {
-    alert('Error saving players: ' + err.message)
+    console.log('Error saving players: ' + err.message)
   }
 }
 

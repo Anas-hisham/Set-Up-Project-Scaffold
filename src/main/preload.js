@@ -29,10 +29,18 @@ contextBridge.exposeInMainWorld('myAPI', {
 
   saveViewSettingsCache: (data) => ipcRenderer.invoke('save-settings-cache', data),
   getViewSettingsCache: () => ipcRenderer.invoke('get-settings-cache'),
-  clearDataFileCache: () => ipcRenderer.invoke('clear-data-cache'),
+  clearDataCache: () => ipcRenderer.invoke('clear-data-cache'),
   // saveViewSettings: (data) => ipcRenderer.invoke('save-settings', data),
   // getViewSettings: () => ipcRenderer.invoke('get-settings'),
   // clearDataFile: () => ipcRenderer.invoke('clear-data'),
+
+
+  setCustomSavePath: (customPath) => ipcRenderer.invoke('set-custom-save-path', customPath),
+
+
+
+
 })
+
 
 

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div
@@ -24,8 +25,8 @@
             settings.displayMode === 'light' ? 'text-black' : 'text-white',
           ]"
         >
-          Display Mode</label
-        >
+          Display Mode
+        </label>
         <select
           v-model="settings.displayMode"
           class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
@@ -48,8 +49,8 @@
             settings.displayMode === 'light' ? 'text-black' : 'text-white',
           ]"
         >
-          Navigation Mode</label
-        >
+          Navigation Mode
+        </label>
         <select
           v-model="settings.navMode"
           class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
@@ -64,27 +65,36 @@
         </select>
       </div>
 
-      <!-- Save Path -->
-      <!-- <div class="md:col-span-2">
-        <label
-          :class="[
-            'block text-sm font-semibold mb-1',
-            settings.displayMode === 'light' ? 'text-black' : 'text-white',
-          ]"
-          >💾 Default Save Path</label
+      <!-- Save Path with button -->
+      <div class="md:col-span-2 flex items-center gap-4 justify-center">
+        <div class="flex-grow">
+          <label
+            :class="[
+              'block text-sm font-semibold mb-1',
+              settings.displayMode === 'light' ? 'text-black' : 'text-white',
+            ]"
+          >
+          </label>
+          <input
+            v-model="settings.savePath"
+            type="text"
+            placeholder="/path/to/save"
+            class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
+            :class="
+              settings.displayMode === 'dark'
+                ? 'bg-gray-900 text-white border-gray-600'
+                : 'bg-white text-gray-900 border-gray-300'
+            "
+          />
+        </div>
+
+        <button
+          @click="applySavePath"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
         >
-        <input
-          v-model="settings.savePath"
-          type="text"
-          placeholder="/path/to/save"
-          class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
-          :class="
-            settings.displayMode === 'dark'
-              ? 'bg-gray-900 text-white border-gray-600'
-              : 'bg-white text-gray-900 border-gray-300'
-          "
-        />
-      </div> -->
+          Apply Path
+        </button>
+      </div>
     </div>
 
     <!-- Buttons -->
@@ -107,24 +117,33 @@
 </template>
 
 <script setup>
-defineProps({
+const { settings } = defineProps({
   settings: Object,
   setSettings: Function,
   refreshView: Function,
   resetSettings: Function,
 })
 
+// Clear data cache
 async function clearInput() {
   try {
-    const result = await window.myAPI.clearDataFileCache();
-    if (result.success) {
-      alert('Data cleared successfully!');
-    } else {
-      throw new Error(result.error);
-    }
+    await window.myAPI.clearDataCache()
   } catch (err) {
-    console.error('Failed to clear data:', err);
-    alert('Failed to clear data. See console for details.');
+    console.error('Failed to clear data:', err)
+  }
+}
+
+// Apply save path change
+async function applySavePath() {
+  try {
+    await window.myAPI.setCustomSavePath(settings.savePath)
+  } catch (err) {
+    console.error('Error updating save path:', err)
   }
 }
 </script>
+<style>
+input {
+  outline: none;
+}
+</style>

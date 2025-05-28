@@ -315,15 +315,10 @@ async function saveMatches() {
       matchInfo: matchInfo.value,
       matches: matches.value,
     })
-    const result = await window.myAPI.saveMatches(dataToSave)
-    if (result && result.success) {
-      alert('Matches saved successfully!')
-    } else {
-      alert('Failed to save Matches: ' + (result.error || 'Unknown error'))
-      console.error('Failed to save Matches:', result.error)
-    }
+     await window.myAPI.saveMatches(dataToSave)
+
   } catch (err) {
-    alert('Error saving Matches: ' + err.message)
+    console.log('Error saving Matches: ' + err.message)
     console.error('Error saving Matches:', err)
   }
 }

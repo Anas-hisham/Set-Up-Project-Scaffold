@@ -3,7 +3,7 @@
     class="mt-12 text-4xl font-bold text-center"
     :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
   >
-    Player Stats
+    Players Stats
   </h1>
   <div class="flex justify-center py-10 px-4">
     <div class="w-full grid gap-4">
@@ -222,7 +222,7 @@
   </div>
   <div class="flex justify-center mt-3">
     <button
-      @click="saveAndAlertPlayers"
+      @click="savePlayers"
       class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
     >
       Save Players
@@ -230,11 +230,10 @@
   </div>
 </template>
 
+
+
 <script setup>
-import { watch, onMounted, ref } from 'vue'
-function deleteHeroImage(index) {
-  players.value[index].hero = null
-}
+import { onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   displayMode: {
@@ -269,14 +268,21 @@ function handleFileChange(event, index, type) {
   if (file) {
     const reader = new FileReader()
     reader.onload = () => {
-      players.value[index][type] = reader.result
+      players.value[index][type] = reader.result // base64 sent to main process
+      console.log(reader.result);
+
     }
     reader.readAsDataURL(file)
   }
 }
-async function saveAndAlertPlayers() {
+
+function deleteHeroImage(index) {
+  players.value[index].hero = null
+}
+
+async function savePlayers() {
   try {
-    const result = await savePlayers()
+const result = await window.myAPI.savePlayer(JSON.stringify(players.value))
     if (result.success) {
       alert('Players saved successfully!')
     } else {
@@ -287,33 +293,20 @@ async function saveAndAlertPlayers() {
   }
 }
 
-async function savePlayers() {
-  try {
-    const result = await window.myAPI.savePlayer(JSON.stringify(players.value))
-    return result // <-- Add this line
-  } catch (err) {
-    console.error('Error saving players:', err)
-    return { success: false, error: err.message } // <-- Graceful fallback
-  }
-}
-
-
 watch(
   players,
   () => {
-    savePlayers()
+    const plainPlayers = JSON.parse(JSON.stringify(players.value))
+    window.myAPI.savePlayerCache(JSON.stringify(plainPlayers))
   },
   { deep: true },
 )
 
 onMounted(async () => {
-  try {
-    const loadedPlayers = await window.myAPI.loadPlayer()
-    if (Array.isArray(loadedPlayers) && loadedPlayers.length) {
-      players.value = loadedPlayers
-    }
-  } catch (err) {
-    console.error('Error loading players:', err)
+  const cached = await window.myAPI.loadPlayerCache()
+  if (cached && Array.isArray(cached)) {
+    players.value = cached
+    console.log(players.value)
   }
 })
 </script>

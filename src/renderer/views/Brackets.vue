@@ -4,7 +4,7 @@
     class="mt-12 text-4xl font-bold text-center"
     :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
   >
-    Bracket’s view
+    Brackets view
   </h1>
   <div class="flex justify-center py-10 px-4">
     <div class="w-full grid gap-2">
@@ -23,7 +23,7 @@
   </div>
   <div class="flex justify-center mb-10">
     <button
-      @click="saveAndAlertPlayers"
+      @click="saveTeams"
       class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
     >
       Save Teams
@@ -67,6 +67,7 @@ function handleFileChange(event, index, type) {
     const reader = new FileReader()
     reader.onload = () => {
       teams.value[index][type] = reader.result
+      console.log(reader.result)
     }
     reader.readAsDataURL(file)
   }
@@ -79,16 +80,6 @@ function triggerFileInput(refsArray, index) {
 async function saveTeams() {
   try {
     const result = await window.myAPI.saveTeams(JSON.stringify(teams.value))
-    return result // Return the result so saveAndAlertPlayers can check it
-  } catch (e) {
-    console.error('Error saving teams:', e)
-    return { success: false, error: e.message || 'Unknown error' } // Return failure object
-  }
-}
-
-async function saveAndAlertPlayers() {
-  try {
-    const result = await saveTeams()
     if (result.success) {
       alert('Players saved successfully!')
     } else {
@@ -103,7 +94,7 @@ async function saveAndAlertPlayers() {
 
 async function loadTeams() {
   try {
-    const loaded = await window.myAPI.loadTeams()
+    const loaded = await window.myAPI.loadTeamsCache()
     loaded.forEach((team, index) => {
       if (teams.value[index]) {
         teams.value[index].image = team.image || ''
@@ -112,6 +103,7 @@ async function loadTeams() {
         teams.value[index].score = team.score || 0
       }
     })
+    console.log(teams.value)
   } catch (e) {
     console.error('Failed to load teams:', e)
   }
@@ -120,7 +112,7 @@ async function loadTeams() {
 watch(
   teams,
   () => {
-    saveTeams()
+    window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
   },
   { deep: true },
 )

@@ -1,5 +1,5 @@
 <template>
-  <div :class="displayMode === 'light' ? 'light-mode' : ''" >
+  <div :class="displayMode === 'light' ? 'light-mode' : ''">
     <h1
       class="mt-12 text-4xl font-bold text-center mb-8"
       :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
@@ -10,7 +10,7 @@
     <div class="px-4 py-3 mb-10">
       <!-- Info -->
       <h2
-        class="font-semibold uppercase text-sm w-full py-4 text-start px-5 "
+        class="font-semibold uppercase text-sm w-full py-4 text-start px-5"
         :class="displayMode === 'dark' ? 'text-white bg-[#22292f]' : 'text-black bg-gray-200'"
       >
         INFO
@@ -26,6 +26,7 @@
             type="date"
             placeholder="Date"
             v-model="matchInfo.date"
+            max="9999-12-31"
             class="pl-8 w-full border py-2 px-3 placeholder-opacity-100"
           />
         </div>
@@ -239,7 +240,7 @@
   </div>
   <div class="flex justify-center">
     <button
-      @click="saveAndAlertPlayers"
+      @click="saveMatches"
       class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
     >
       Save Matches
@@ -303,48 +304,47 @@ function uploadImage(event, matchIndex, field) {
   const reader = new FileReader()
   reader.onload = () => {
     matches.value[matchIndex][field] = reader.result
+    console.log(reader.result)
   }
   reader.readAsDataURL(file)
 }
-async function saveData() {
+
+async function saveMatches() {
   try {
     const dataToSave = JSON.stringify({
       matchInfo: matchInfo.value,
       matches: matches.value,
-    });
-    const result = await window.myAPI.saveMatches(dataToSave);
-
-    if (!result.success) {
-      console.error('Failed to save data:', result.error);
-    }
-    return result; // <-- Return result here!
-  } catch (e) {
-    console.error('Save error:', e);
-    return { success: false, error: e.message || e.toString() }; // Return failure info
-  }
-}
-
-async function saveAndAlertPlayers() {
-  try {
-    const result = await saveData();
+    })
+    const result = await window.myAPI.saveMatches(dataToSave)
     if (result && result.success) {
-      alert('Matches saved successfully!');
+      alert('Matches saved successfully!')
     } else {
-      alert('Failed to save Matches: ' + (result.error || 'Unknown error'));
-      console.error('Failed to save Matches:', result.error);
+      alert('Failed to save Matches: ' + (result.error || 'Unknown error'))
+      console.error('Failed to save Matches:', result.error)
     }
   } catch (err) {
-    alert('Error saving Matches: ' + err.message);
-    console.error('Error saving Matches:', err);
+    alert('Error saving Matches: ' + err.message)
+    console.error('Error saving Matches:', err)
   }
 }
 
-
-async function loadData() {
+// Load data from matchesCache instead of matches file
+async function loadDataCache() {
   try {
-    const loaded = await window.myAPI.loadMatches()
-    if (loaded.matchInfo) matchInfo.value = loaded.matchInfo
-    if (loaded.matches) matches.value = loaded.matches
+    const loaded = await window.myAPI.loadMatchesCache()
+    console.log('Loaded cache:', loaded)
+    if (
+      loaded &&
+      typeof loaded === 'object' &&
+      loaded.matchInfo &&
+      loaded.matches &&
+      Array.isArray(loaded.matches)
+    ) {
+      matchInfo.value = loaded.matchInfo
+      matches.value = loaded.matches
+    } else {
+      console.warn('No valid cache found, using default data')
+    }
   } catch (e) {
     console.error('Load error:', e)
   }
@@ -353,13 +353,17 @@ async function loadData() {
 watch(
   [matchInfo, matches],
   () => {
-    saveData()
+    const dataToSave = {
+      matchInfo: matchInfo.value,
+      matches: matches.value,
+    }
+    window.myAPI.saveMatchesCache(JSON.stringify(dataToSave))
   },
   { deep: true },
 )
 
 onMounted(() => {
-  loadData()
+  loadDataCache()
 })
 </script>
 

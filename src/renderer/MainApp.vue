@@ -48,8 +48,8 @@ import SideNav from './components/SideNav.vue'
 import AppToolbar from './components/AppToolbar.vue'
 
 import BracketView from './views/Brackets.vue'
-import PlayersStatsView from './views/Players-Stats.vue'
-import TodaysMatchesView from './views/Todays-Matches.vue'
+import PlayersStatsView from './views/PlayersStats.vue'
+import TodaysMatchesView from './views/TodaysMatches.vue'
 import SettingsView from './views/Settings.vue'
 
 const selectedIndex = ref(0)
@@ -69,7 +69,7 @@ const settings = ref({ ...defaultSettings })
 // Load settings from Electron on mount
 onMounted(async () => {
   try {
-    const savedSettings = await window.myAPI.getViewSettings()
+    const savedSettings = await window.myAPI.getViewSettingsCache()
     if (savedSettings) {
       settings.value = { ...defaultSettings, ...savedSettings }
     }
@@ -78,14 +78,13 @@ onMounted(async () => {
   }
 })
 
-// Watch settings deeply and save whenever changed
 watch(
   settings,
   async (newSettings) => {
     try {
       // Convert reactive to plain object before sending
       const plainSettings = JSON.parse(JSON.stringify(newSettings))
-      await window.myAPI.saveViewSettings(plainSettings)
+      await window.myAPI.saveViewSettingsCache(plainSettings)
     } catch (err) {
       console.error('Failed to save settings:', err)
     }
@@ -113,7 +112,7 @@ function openSettings() {
 }
 
 const views = [
-  { title: "Bracket's View", component: BracketView },
+  { title: "Brackets View", component: BracketView },
   { title: 'Players Stats', component: PlayersStatsView },
   { title: "Today's Matches", component: TodaysMatchesView },
   { title: 'Settings', component: SettingsView },

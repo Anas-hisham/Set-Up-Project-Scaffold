@@ -23,7 +23,8 @@
             'block text-sm font-semibold mb-1',
             settings.displayMode === 'light' ? 'text-black' : 'text-white',
           ]"
-          > Display Mode</label
+        >
+          Display Mode</label
         >
         <select
           v-model="settings.displayMode"
@@ -47,7 +48,7 @@
             settings.displayMode === 'light' ? 'text-black' : 'text-white',
           ]"
         >
-           Navigation Mode</label
+          Navigation Mode</label
         >
         <select
           v-model="settings.navMode"
@@ -84,7 +85,6 @@
           "
         />
       </div> -->
-
     </div>
 
     <!-- Buttons -->
@@ -98,8 +98,8 @@
 
       <button
         @click="clearInput"
-           class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
-   >
+        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
+      >
         Clear Input Data
       </button>
     </div>
@@ -116,11 +116,15 @@ defineProps({
 
 async function clearInput() {
   try {
-    await window.myAPI.clearDataFile()
-    alert('Data cleared successfully!')
+    const result = await window.myAPI.clearDataFileCache();
+    if (result.success) {
+      alert('Data cleared successfully!');
+    } else {
+      throw new Error(result.error);
+    }
   } catch (err) {
-    console.error('Failed to clear data:', err)
-    alert('Failed to clear data. See console for details.')
+    console.error('Failed to clear data:', err);
+    alert('Failed to clear data. See console for details.');
   }
 }
 </script>

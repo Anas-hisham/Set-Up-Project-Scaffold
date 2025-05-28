@@ -11,15 +11,28 @@
     "preview": "npm run build && cross-env NODE_ENV=production electron .",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.1",
     "pinia": "^3.0.1",
     "primeicons": "^7.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-rpm": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.22.0",
     "@tailwindcss/vite": "^4.1.7",
     "@vitejs/plugin-vue": "^5.2.3",
@@ -27,7 +40,6 @@
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^36.2.1",
-    "electron-builder": "^26.0.12",
     "electronmon": "^2.0.3",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "~10.0.0",
@@ -37,10 +49,10 @@
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "wait-on": "^8.0.3"
-  }
-  ,"build": {
+  },
+  "build": {
     "appId": "com.yourcompany.trygl",
-    "productName": "Try GL",
+    "productName": "GL Stream",
     "copyright": "Copyright © 2025",
     "files": [
       "dist/**",
@@ -70,8 +82,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Try GL",
-      "uninstallDisplayName": "Try GL"
+      "shortcutName": "GL Stream",
+      "uninstallDisplayName": "GL Stream"
     }
   }
 }

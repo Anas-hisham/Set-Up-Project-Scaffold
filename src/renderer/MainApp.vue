@@ -6,7 +6,7 @@
     ]"
   >
     <AppToolbar
-      :currentTitle="visibleViews[selectedIndex]?.title || 'No View Selected'"
+      :currentTitle="visibleViews[selectedIndex]?.title || 'Settings'"
       :openSettings="openSettings"
       :displayMode="settings.displayMode"
     />
@@ -146,12 +146,21 @@ function resetSettings() {
 const previousIndex = ref(0)
 
 function openSettings() {
-  const settingsIndex = allViews.value.findIndex((v) => v.title === 'Settings')
+  const visible = visibleViews.value
+  if (visible.length === 0) return
+
+  const settingsIndex = settings.value.views.findIndex((v) => v.title === 'Settings')
+
   if (selectedIndex.value === settingsIndex) {
-    selectedIndex.value = previousIndex.value
+    // Switch back to the first visible view instead of hardcoded index
+    const firstVisibleIndex = settings.value.views.findIndex((v) => v.visible)
+    if (firstVisibleIndex !== -1) {
+      selectedIndex.value = firstVisibleIndex
+    }
   } else {
     previousIndex.value = selectedIndex.value
     selectedIndex.value = settingsIndex
   }
 }
+
 </script>

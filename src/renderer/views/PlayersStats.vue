@@ -281,7 +281,7 @@ async function savePlayers() {
   try {
     await window.myAPI.savePlayer(JSON.stringify(players.value))
   } catch (err) {
-    console.log('Error saving players: ' + err.message)
+    window.myAPI.logError(`Error saving players: ${err.message}`)
   }
 }
 
@@ -295,10 +295,14 @@ watch(
 )
 
 onMounted(async () => {
-  const cached = await window.myAPI.loadPlayerCache()
-  if (cached && Array.isArray(cached)) {
-    players.value = cached
-    console.log(players.value)
+  try {
+    const cached = await window.myAPI.loadPlayerCache()
+    if (cached && Array.isArray(cached)) {
+      players.value = cached
+      console.log(players.value)
+    }
+  } catch (e) {
+    window.myAPI.logError(`Error loading player cache: ${e.message}`)
   }
 })
 </script>

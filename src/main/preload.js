@@ -39,6 +39,9 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 
 
+logError: (message) => ipcRenderer.send('log-error', message),
+
+
 
 })
 

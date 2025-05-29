@@ -315,11 +315,10 @@ async function saveMatches() {
       matchInfo: matchInfo.value,
       matches: matches.value,
     })
-     await window.myAPI.saveMatches(dataToSave)
-
+    await window.myAPI.saveMatches(dataToSave)
   } catch (err) {
     console.log('Error saving Matches: ' + err.message)
-    console.error('Error saving Matches:', err)
+    window.myAPI.logError(`Error saving Matches: ${err.message}`)
   }
 }
 
@@ -341,7 +340,7 @@ async function loadDataCache() {
       console.warn('No valid cache found, using default data')
     }
   } catch (e) {
-    console.error('Load error:', e)
+    window.myAPI.logError(`Error loading Matches: ${e.message}`)
   }
 }
 

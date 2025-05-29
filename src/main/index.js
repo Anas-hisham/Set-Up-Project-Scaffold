@@ -10,12 +10,26 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // Start with stored or default path
 
-let customSavePath = store.get('customSavePath') || app.getPath('userData')
+let customSavePath = store.get('customSavePath')
 
-if (store.get('customSavePath') === null || undefined || "") {
-  customSavePath = app.getPath('userData');
+if (!customSavePath || typeof customSavePath !== 'string' || customSavePath.trim() === '') {
+  customSavePath = app.getPath('userData')
 }
-console.log(customSavePath);
+
+console.log('Using save path:', customSavePath)
+
+
+
+const logFilePath = path.join(customSavePath, 'errors.log')
+
+function appendToLog(message) {
+  const logMessage = `[${new Date()}] ${message}\n`
+  fs.appendFileSync(logFilePath, logMessage)
+}
+
+
+
+
 
 // Folder paths - updated dynamically
 let jsonFolderPath
@@ -68,12 +82,19 @@ function createWindow() {
   }
 }
 
+
 // IPC handler to set custom save path and recreate folders
 ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
   try {
+    // If newPath is empty, null, or just whitespace, use default
+    if (!newPath || typeof newPath !== 'string' || newPath.trim() === '') {
+      newPath = app.getPath('userData')
+    }
+
     if (!fs.existsSync(newPath)) {
       fs.mkdirSync(newPath, { recursive: true })
     }
+
     store.set('customSavePath', newPath)
     customSavePath = newPath
     ensureFoldersExist(customSavePath)
@@ -212,6 +233,30 @@ ipcMain.handle('clear-data-cache', async () => {
     return { success: false, error: error.message }
   }
 })
+
+
+
+
+
+
+// Handle renderer-to-main log requests
+ipcMain.on('log-error', (_event, message) => {
+  appendToLog(message)
+})
+
+// Catch unhandled errors in the main process
+process.on('uncaughtException', (err) => {
+  appendToLog(`Uncaught Exception: ${err.stack || err.message}`)
+})
+
+process.on('unhandledRejection', (reason) => {
+  appendToLog(`Unhandled Rejection: ${reason}`)
+})
+
+
+
+
+
 
 
 // Ready event

@@ -1,5 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div
     :class="[
@@ -97,6 +95,51 @@
       </div>
     </div>
 
+    <!-- Manage Views Section -->
+    <div class="mt-8">
+      <h3
+        :class="[
+          'text-xl font-bold mb-4',
+          settings.displayMode === 'light' ? 'text-black' : 'text-white',
+        ]"
+      >
+        Manage Views
+      </h3>
+      <div
+        class="bg-opacity-50 p-4 rounded-lg"
+        :class="settings.displayMode === 'dark' ? 'bg-gray-800' : 'bg-gray-200'"
+      >
+        <div
+          v-for="(view, index) in withoutSettings()"
+          :key="index"
+          class="flex items-center justify-between py-2 border-b"
+          :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-300'"
+        >
+          <span
+            :class="['font-medium', settings.displayMode === 'light' ? 'text-black' : 'text-white']"
+          >
+            {{ view.title }}
+          </span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              v-model="view.visible"
+              @change="updateViewVisibility(index)"
+              class="sr-only peer"
+            />
+            <div
+              class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
+              :class="
+                settings.displayMode === 'dark'
+                  ? 'peer-checked:bg-blue-600 bg-gray-700'
+                  : 'peer-checked:bg-blue-500 bg-gray-300'
+              "
+            ></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Buttons -->
     <div class="flex flex-wrap justify-between gap-4 pt-6">
       <button
@@ -117,19 +160,24 @@
 </template>
 
 <script setup>
-const { settings } = defineProps({
+const { settings, allViews, setSettings } = defineProps({
   settings: Object,
+  allViews: Array,
   setSettings: Function,
   refreshView: Function,
   resetSettings: Function,
 })
+
+function withoutSettings() {
+  return allViews.filter((view) => view.title !== 'Settings')
+}
 
 // Clear data cache
 async function clearInput() {
   try {
     await window.myAPI.clearDataCache()
   } catch (err) {
-    console.error('Failed to clear data:', err)
+    window.myAPI.logError(`Failed to clear data: ${err.message}`)
   }
 }
 
@@ -138,12 +186,15 @@ async function applySavePath() {
   try {
     await window.myAPI.setCustomSavePath(settings.savePath)
   } catch (err) {
-    console.error('Error updating save path:', err)
+    window.myAPI.logError(`Error updating save path: ${err.message}`)
   }
 }
-</script>
-<style>
-input {
-  outline: none;
+
+// Update view visibility
+function updateViewVisibility(index) {
+  setSettings({
+    ...settings,
+    views: [...allViews],
+  })
 }
-</style>
+</script>

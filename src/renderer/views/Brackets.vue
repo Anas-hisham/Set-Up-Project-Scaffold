@@ -82,7 +82,7 @@ async function saveTeams() {
      await window.myAPI.saveTeams(JSON.stringify(teams.value))
 
   } catch (err) {
-    console.error('Error saving players:', err)
+    window.myAPI.logError(`Error saving players: ${err.message}`)
   }
 }
 
@@ -99,7 +99,7 @@ async function loadTeams() {
     })
     console.log(teams.value)
   } catch (e) {
-    console.error('Failed to load teams:', e)
+    window.myAPI.logError(`Failed to load players: ${e.message}`)
   }
 }
 

@@ -114,9 +114,7 @@ onMounted(async () => {
   }
 })
 
-watch(
-  settings,
-  async (newSettings) => {
+watch(settings, async (newSettings) => {
     try {
       // Convert reactive to plain object before sending
       const plainSettings = JSON.parse(JSON.stringify(newSettings))
@@ -132,16 +130,16 @@ function setSettings(newSettings) {
   settings.value = { ...settings.value, ...newSettings }
 }
 function resetSettings() {
-  // Clear path from settings before saving
+  // Reset to default views configuration
   settings.value = {
     ...defaultSettings,
-    savePath: '', // or null if you want
+    savePath: '',
+    views: defaultSettings.views.map((view) => ({ ...view })), // Create fresh copies
   }
 
-  // Also clear custom path from persistent store (optional but recommended)
+  // Also clear custom path from persistent store
   window.myAPI.setCustomSavePath('')
 }
-
 
 const previousIndex = ref(0)
 
@@ -162,5 +160,4 @@ function openSettings() {
     selectedIndex.value = settingsIndex
   }
 }
-
 </script>

@@ -6,7 +6,7 @@
       displayMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black',
     ]"
   >
-    <div class="flex justify-center items-center h-[calc(100vh-60px)] ">
+    <div class="flex justify-center items-center h-[calc(100vh-60px)]">
       <ul style="list-style: none; padding: 0">
         <li
           v-for="(view, index) in views"
@@ -23,8 +23,8 @@
           @click="selected(index)"
           :title="navMode === 'mini' ? view.title : ''"
         >
-          <!-- If mini mode, only show icon or first letter, else show full title -->
-          <span v-if="navMode === 'mini'">{{ view.title.charAt(0) }}</span>
+
+        <span v-if="navMode === 'mini'">{{ view.title.charAt(0) }}</span>
           <span v-else>{{ view.title }}</span>
         </li>
       </ul>
@@ -42,9 +42,7 @@ defineProps({
 })
 
 const fullWidthClass = 'col-span-3 lg:col-span-2 w-auto'
-const miniWidthClass = 'w-16 col-span-1' // smaller width for mini mode
+const miniWidthClass = 'w-16 col-span-1'
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

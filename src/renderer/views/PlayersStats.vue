@@ -21,7 +21,7 @@
           ></i>
           <input
             type="text"
-            v-model="player.name"
+            v-model="player['Player Name']"
             placeholder="Player Name"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -45,7 +45,7 @@
           ></i>
           <input
             type="text"
-            v-model="player.team"
+            v-model="player['Team Name']"
             placeholder="Team Name"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -69,7 +69,7 @@
           ></i>
           <input
             type="text"
-            v-model="player.weapon"
+            v-model="player['Favourite Weapon']"
             placeholder="Favorite Weapon"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -93,7 +93,7 @@
           ></i>
           <input
             type="number"
-            v-model.number="player.economy"
+            v-model.number="player['Economy Score']"
             placeholder="Economy Score"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -114,13 +114,13 @@
             type="file"
             class="hidden"
             :ref="(el) => (heroRefs[index] = el)"
-            @change="handleFileChange($event, index, 'hero')"
+            @change="handleFileChange($event, index, 'Hero Image')"
           />
           <span class="text-sm opacity-65">Hero Image</span>
 
-          <div v-if="player.hero" class="flex items-center gap-2">
+          <div v-if="player['Hero Image']" class="flex items-center gap-2">
             <img
-              :src="player.hero"
+              :src="player['Hero Image']"
               alt="Hero"
               class="w-12 h-12 object-cover cursor-pointer rounded"
               @click="() => triggerFileInput(heroRefs, index)"
@@ -159,7 +159,7 @@
           ></i>
           <input
             type="number"
-            v-model.number="player.kills"
+            v-model.number="player.Kills"
             placeholder="Kills"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -183,7 +183,7 @@
           ></i>
           <input
             type="number"
-            v-model.number="player.deaths"
+            v-model.number="player.Deaths"
             placeholder="Deaths"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -207,7 +207,7 @@
           ></i>
           <input
             type="number"
-            v-model.number="player.assists"
+            v-model.number="player.Assists"
             placeholder="Assists"
             class="outline-hidden pl-5 w-full"
             :class="
@@ -242,44 +242,56 @@ const props = defineProps({
 
 const players = ref([
   {
-    name: '',
-    team: '',
-    weapon: '',
-    economy: null,
-    hero: null,
-    kills: null,
-    deaths: null,
-    assists: null,
+    'Player Name': '',
+    'Team Name': '',
+    'Favourite Weapon': '',
+    'Economy Score': '',
+    'Hero Image': '',
+    Kills: '',
+    Deaths: '',
+    Assists: '',
   },
 ])
 
 const heroRefs = ref([])
 
 function triggerFileInput(refs, index) {
-  if (refs[index]) {
-    refs[index].click()
+  try {
+    if (refs[index]) {
+      refs[index].click()
+    }
+  } catch (err) {
+    window.myAPI.logError(`Error triggering file input: ${err.message}`)
   }
 }
 
 function handleFileChange(event, index, type) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      players.value[index][type] = reader.result // base64 sent to main process
-      console.log(reader.result)
+  try {
+    const file = event.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        players.value[index][type] = reader.result
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
+  } catch (err) {
+    window.myAPI.logError(`Error handling file change: ${err.message}`)
   }
 }
 
 function deleteHeroImage(index) {
-  players.value[index].hero = null
+  try {
+    players.value[index]['Hero Image'] = null
+  } catch (err) {
+    window.myAPI.logError(`Error deleting hero image: ${err.message}`)
+  }
 }
 
 async function savePlayers() {
   try {
-    await window.myAPI.savePlayer(JSON.stringify(players.value))
+    const playersToSave = JSON.parse(JSON.stringify(players.value))
+    await window.myAPI.savePlayer(JSON.stringify(playersToSave))
   } catch (err) {
     window.myAPI.logError(`Error saving players: ${err.message}`)
   }
@@ -288,8 +300,12 @@ async function savePlayers() {
 watch(
   players,
   () => {
-    const plainPlayers = JSON.parse(JSON.stringify(players.value))
-    window.myAPI.savePlayerCache(JSON.stringify(plainPlayers))
+    try {
+      const plainPlayers = JSON.parse(JSON.stringify(players.value))
+      window.myAPI.savePlayerCache(JSON.stringify(plainPlayers))
+    } catch (err) {
+      window.myAPI.logError(`Error saving player cache: ${err.message}`)
+    }
   },
   { deep: true },
 )
@@ -299,10 +315,9 @@ onMounted(async () => {
     const cached = await window.myAPI.loadPlayerCache()
     if (cached && Array.isArray(cached)) {
       players.value = cached
-      console.log(players.value)
     }
-  } catch (e) {
-    window.myAPI.logError(`Error loading player cache: ${e.message}`)
+  } catch (err) {
+    window.myAPI.logError(`Error loading player cache: ${err.message}`)
   }
 })
 </script>

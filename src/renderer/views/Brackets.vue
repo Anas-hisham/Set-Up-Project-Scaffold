@@ -1,4 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
+<!-- BracketsView.vue -->
 <template>
   <h1
     class="mt-12 text-4xl font-bold text-center"
@@ -6,6 +6,7 @@
   >
     Brackets view
   </h1>
+
   <div class="flex justify-center py-10 px-4">
     <div class="w-full grid gap-2">
       <TeamInputs
@@ -21,6 +22,7 @@
       />
     </div>
   </div>
+
   <div class="flex justify-center mb-10">
     <button
       @click="saveTeams"
@@ -35,19 +37,15 @@
 import { ref, onMounted, watch } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
 
-defineProps({
-  displayMode: {
-    type: String,
-  },
-})
+defineProps({ displayMode: String })
 
 const teams = ref([])
 
 const createTeam = () => ({
-  image: '',
-  flag: '',
-  name: '',
-  score: 0,
+  'Team Image': '',
+  'Team Flag': '',
+  'Team Name': '',
+  'Team Score': 0,
 })
 
 const teamsLoop = () => {
@@ -58,8 +56,8 @@ const teamsLoop = () => {
   teams.value = TeamsReturn
 }
 
-const imageRefs = []
-const flagRefs = []
+const imageRefs = ref([])
+const flagRefs = ref([])
 
 function handleFileChange(event, index, type) {
   const file = event.target.files[0]
@@ -67,7 +65,7 @@ function handleFileChange(event, index, type) {
     const reader = new FileReader()
     reader.onload = () => {
       teams.value[index][type] = reader.result
-      console.log(reader.result)
+
     }
     reader.readAsDataURL(file)
   }
@@ -79,27 +77,27 @@ function triggerFileInput(refsArray, index) {
 
 async function saveTeams() {
   try {
-     await window.myAPI.saveTeams(JSON.stringify(teams.value))
-
+    await window.myAPI.saveTeams(JSON.stringify(teams.value))
   } catch (err) {
-    window.myAPI.logError(`Error saving players: ${err.message}`)
+    window.myAPI.logError(`Error saving teams: ${err.message}`)
   }
 }
 
 async function loadTeams() {
   try {
     const loaded = await window.myAPI.loadTeamsCache()
-    loaded.forEach((team, index) => {
-      if (teams.value[index]) {
-        teams.value[index].image = team.image || ''
-        teams.value[index].flag = team.flag || ''
-        teams.value[index].name = team.name || ''
-        teams.value[index].score = team.score || 0
-      }
-    })
-    console.log(teams.value)
+    if (Array.isArray(loaded)) {
+      loaded.forEach((team, index) => {
+        if (teams.value[index]) {
+          teams.value[index]['Team Image'] = team['Team Image'] || ''
+          teams.value[index]['Team Flag'] = team['Team Flag'] || ''
+          teams.value[index]['Team Name'] = team['Team Name'] || ''
+          teams.value[index]['Team Score'] = team['Team Score'] || 0
+        }
+      })
+    }
   } catch (e) {
-    window.myAPI.logError(`Failed to load players: ${e.message}`)
+    window.myAPI.logError(`Failed to load teams: ${e.message}`)
   }
 }
 
@@ -116,11 +114,3 @@ onMounted(() => {
   loadTeams()
 })
 </script>
-
-<style>
-.preview-image {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-}
-</style>

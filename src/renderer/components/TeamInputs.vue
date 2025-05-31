@@ -7,19 +7,18 @@
         displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'
       "
     >
-      <!-- Hidden file input always present -->
       <input
         type="file"
         class="hidden"
         :ref="(el) => (imageRefs[index] = el)"
-        @change="handleFileChange($event, index, 'image')"
+        @change="handleFileChange($event, index, 'Team Image')"
         accept="image/*"
       />
       <span class="text-sm">Team Image</span>
 
-      <div v-if="team.image" class="flex items-center gap-2">
+      <div v-if="team['Team Image']" class="flex items-center gap-2">
         <img
-          :src="team.image"
+          :src="team['Team Image']"
           alt="Team"
           class="w-12 h-12 object-cover cursor-pointer"
           @click="() => triggerFileInput(imageRefs, index)"
@@ -27,7 +26,7 @@
         <button
           @click="
             () => {
-              team.image = ''
+              team['Team Image'] = ''
             }
           "
           class="text-red-500 hover:text-red-700 font-semibold"
@@ -55,19 +54,18 @@
         displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'
       "
     >
-      <!-- Hidden file input always present -->
       <input
         type="file"
         class="hidden"
         :ref="(el) => (flagRefs[index] = el)"
-        @change="handleFileChange($event, index, 'flag')"
+        @change="handleFileChange($event, index, 'Team Flag')"
         accept="image/*"
       />
       <span class="text-sm">Team Flag</span>
 
-      <div v-if="team.flag" class="flex items-center gap-2 ">
+      <div v-if="team['Team Flag']" class="flex items-center gap-2">
         <img
-          :src="team.flag"
+          :src="team['Team Flag']"
           alt="Flag"
           class="w-12 h-12 object-cover cursor-pointer"
           @click="() => triggerFileInput(flagRefs, index)"
@@ -75,7 +73,7 @@
         <button
           @click="
             () => {
-              team.flag = ''
+              team['Team Flag'] = ''
             }
           "
           class="text-red-500 hover:text-red-700 font-semibold"
@@ -107,14 +105,12 @@
       ></i>
       <input
         type="text"
-        v-model="team.name"
+        v-model="team['Team Name']"
         maxlength="13"
         placeholder="Team Name"
         class="outline-hidden pl-5 w-full"
         :class="
-          displayMode === 'dark'
-            ? 'placeholder-white placeholder-opacity-100 text-white'
-            : 'placeholder-black placeholder-opacity-100 text-black'
+          displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
         "
       />
     </div>
@@ -130,13 +126,11 @@
       ></i>
       <input
         type="number"
-        v-model.number="team.score"
+        v-model.number="team['Team Score']"
         placeholder="Team Score"
         class="outline-hidden pl-5 w-full"
         :class="
-          displayMode === 'dark'
-            ? 'placeholder-white placeholder-opacity-100 text-white'
-            : 'placeholder-black placeholder-opacity-100 text-black'
+          displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
         "
       />
     </div>
@@ -157,8 +151,3 @@ defineProps({
   },
 })
 </script>
-<style>
-button {
-  cursor: pointer;
-}
-</style>

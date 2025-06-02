@@ -12,29 +12,18 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "dist": "npm run build && electron-builder",
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish"
+    "publish": "electron-builder --publish always"
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^10.0.1",
+    "electron-updater": "^6.6.2",
     "pinia": "^3.0.1",
     "primeicons": "^7.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.8.1",
-    "@electron-forge/maker-deb": "^7.8.1",
-    "@electron-forge/maker-rpm": "^7.8.1",
-    "@electron-forge/maker-squirrel": "^7.8.1",
-    "@electron-forge/maker-zip": "^7.8.1",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
-    "@electron-forge/plugin-fuses": "^7.8.1",
-    "@electron-forge/publisher-github": "^7.8.1",
-    "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.22.0",
     "@tailwindcss/vite": "^4.1.7",
     "@vitejs/plugin-vue": "^5.2.3",
@@ -45,15 +34,15 @@
     "electronmon": "^2.0.3",
     "eslint": "^9.22.0",
     "eslint-plugin-vue": "~10.0.0",
-    "globals": "^16.0.0",
     "prettier": "3.5.3",
     "tailwindcss": "^4.1.7",
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "wait-on": "^8.0.3"
   },
+  "repository": "https://github.com/Anas-hisham/Set-Up-Project-Scaffold",
   "build": {
-    "appId": "com.yourcompany.trygl",
+    "appId": "com.GL.trygl",
     "productName": "GL Stream",
     "copyright": "Copyright © 2025",
     "files": [
@@ -63,21 +52,19 @@
       "node_modules/**",
       "package.json"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "Anas-hisham",
+      "repo": "Set-Up-Project-Scaffold",
+      "private": false,
+      "releaseType": "release"
+    },
     "extraResources": [],
     "directories": {
-      "buildResources": "build"
+      "output": "dist"
     },
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        }
-      ],
-      "icon": "build/icon.ico"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,

@@ -4,9 +4,16 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import Store from 'electron-store'
+import pkg from 'electron-updater';
 
+
+const { autoUpdater } = pkg;
 const store = new Store()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+
+let mainWindow
+
 
 let customSavePath = store.get('customSavePath')
 if (!customSavePath || typeof customSavePath !== 'string' || customSavePath.trim() === '') {
@@ -50,7 +57,7 @@ function getFilePaths() {
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
     webPreferences: {
@@ -60,12 +67,13 @@ function createWindow() {
   })
 
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:5173')
-    win.webContents.openDevTools()
+    mainWindow.loadURL('http://localhost:5173')
+    mainWindow.webContents.openDevTools()
   } else {
-    win.loadFile(path.join(__dirname, '../../dist/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
   }
 }
+
 
 ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
   try {
@@ -276,6 +284,91 @@ ipcMain.handle('rename-preset', async (event, oldName, newName) => {
     return false;
   }
 });
+
+
+
+
+
+
+
+
+
+ipcMain.handle('get-app-version', () => app.getVersion())
+
+
+
+
+
+
+autoUpdater.autoDownload = false // Manual control
+
+autoUpdater.on('update-available', () => {
+  if (mainWindow?.webContents) {
+    mainWindow.webContents.send('update_available')
+  } else {
+    console.error('Update check error: mainWindow is not ready (update-available)')
+  }
+})
+
+autoUpdater.on('update-not-available', () => {
+  if (mainWindow?.webContents) {
+    mainWindow.webContents.send('update_not_available')
+  } else {
+    console.error('Update check error: mainWindow is not ready (update-not-available)')
+  }
+})
+
+autoUpdater.on('update-downloaded', () => {
+  if (mainWindow?.webContents) {
+    mainWindow.webContents.send('update_downloaded')
+  } else {
+    console.error('Update check error: mainWindow is not ready (update-downloaded)')
+  }
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+  const percentage = Math.round(progressObj.percent)
+  mainWindow.webContents.send('update-download-progress', percentage)
+})
+
+
+
+
+// Expose update check to renderer
+ipcMain.handle('check-for-update', async () => {
+  try {
+    await autoUpdater.checkForUpdates()
+  } catch (err) {
+    console.error('Error checking for update:', err) // Log error to console
+    return { error: err.message }
+  }
+})
+
+ipcMain.handle('download-update', async () => {
+  try {
+    await autoUpdater.downloadUpdate()
+  } catch (err) {
+    console.error('Error downloading update:', err) // Log error to console
+    return { error: err.message }
+  }
+})
+
+ipcMain.on('quit-and-install', () => {
+  autoUpdater.quitAndInstall()
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ipcMain.on('log-error', (_event, message) => {

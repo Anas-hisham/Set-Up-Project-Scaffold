@@ -5,20 +5,97 @@
       settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-white text-gray-900',
     ]"
   >
-    <h2 :class="['text-3xl font-extrabold text-center mb-10', settings.displayMode === 'light' ? 'text-black' : 'text-white']">
-      ⚙️ Application Settings
+    <h2
+      :class="[
+        'text-3xl font-extrabold text-center mb-10',
+        settings.displayMode === 'light' ? 'text-black' : 'text-white',
+      ]"
+    >
+      Settings
     </h2>
+
+
+
+    <div class="my-12 text-center border-t border-gray-300 dark:border-gray-700 pt-8 px-4">
+    <p
+      :class="settings.displayMode === 'dark' ? 'text-gray-200' : 'text-gray-800'"
+      class="text-lg font-medium"
+    >
+      Version: {{ appVersion }}
+    </p>
+
+    <button
+      @click="checkForUpdate"
+      class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
+    >
+      Check for Update
+    </button>
+
+    <!-- Only show update UI if either manually checked or update is available -->
+    <div v-if="showUpdateUI">
+      <div v-if="updateAvailable" class="mt-4">
+        <button
+          @click="downloadUpdate"
+          class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
+        >
+          Download Update
+        </button>
+      </div>
+
+      <p
+        class="mt-5 text-sm"
+        :class="settings.displayMode === 'dark' ? 'text-blue-300' : 'text-blue-700'"
+      >
+        {{ updateMessage }}
+      </p>
+
+      <!-- Optional progress bar -->
+      <div
+        v-if="downloadPercent > 0 && downloadPercent < 100"
+        class="w-full max-w-lg mx-auto bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden mt-4"
+      >
+        <div
+          class="bg-blue-500 h-3 transition-all duration-300"
+          :style="{ width: downloadPercent + '%' }"
+        ></div>
+      </div>
+
+      <div v-if="updateReady" class="mt-6">
+        <button
+          @click="installUpdate"
+          class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded-lg shadow-md"
+        >
+          Restart & Install
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- Display Mode -->
       <div>
-        <label :class="['block text-sm font-semibold mb-1', settings.displayMode === 'light' ? 'text-black' : 'text-white']">
+        <label
+          :class="[
+            'block text-sm font-semibold mb-1',
+            settings.displayMode === 'light' ? 'text-black' : 'text-white',
+          ]"
+        >
           Display Mode
         </label>
         <select
           v-model="settings.displayMode"
           class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
-          :class="settings.displayMode === 'dark' ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+          :class="
+            settings.displayMode === 'dark'
+              ? 'bg-gray-900 text-white border-gray-600'
+              : 'bg-white text-gray-900 border-gray-300'
+          "
         >
           <option value="light">☀️ Light</option>
           <option value="dark">🌙 Dark</option>
@@ -27,13 +104,22 @@
 
       <!-- Navigation Mode -->
       <div>
-        <label :class="['block text-sm font-semibold mb-1', settings.displayMode === 'light' ? 'text-black' : 'text-white']">
+        <label
+          :class="[
+            'block text-sm font-semibold mb-1',
+            settings.displayMode === 'light' ? 'text-black' : 'text-white',
+          ]"
+        >
           Navigation Mode
         </label>
         <select
           v-model="settings.navMode"
           class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
-          :class="settings.displayMode === 'dark' ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+          :class="
+            settings.displayMode === 'dark'
+              ? 'bg-gray-900 text-white border-gray-600'
+              : 'bg-white text-gray-900 border-gray-300'
+          "
         >
           <option value="full">Full</option>
           <option value="mini">Mini</option>
@@ -48,7 +134,11 @@
             type="text"
             placeholder="/path/to/save"
             class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
-            :class="settings.displayMode === 'dark' ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+            :class="
+              settings.displayMode === 'dark'
+                ? 'bg-gray-900 text-white border-gray-600'
+                : 'bg-white text-gray-900 border-gray-300'
+            "
           />
         </div>
         <button
@@ -62,7 +152,14 @@
 
     <!-- Manage Views -->
     <div class="mt-8">
-      <h3 :class="['text-xl font-bold mb-4', settings.displayMode === 'light' ? 'text-black' : 'text-white']">Manage Views</h3>
+      <h3
+        :class="[
+          'text-xl font-bold mb-4',
+          settings.displayMode === 'light' ? 'text-black' : 'text-white',
+        ]"
+      >
+        Manage Views
+      </h3>
       <div class="bg-opacity-50 p-4 rounded-lg">
         <div
           v-for="(view, index) in withoutSettings()"
@@ -70,14 +167,25 @@
           class="flex items-center justify-between py-4 border-b"
           :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-300'"
         >
-          <span :class="['font-medium', settings.displayMode === 'light' ? 'text-black' : 'text-white']">
+          <span
+            :class="['font-medium', settings.displayMode === 'light' ? 'text-black' : 'text-white']"
+          >
             {{ view.title }}
           </span>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" v-model="view.visible" @change="updateViewVisibility(index)" class="sr-only peer" />
+            <input
+              type="checkbox"
+              v-model="view.visible"
+              @change="updateViewVisibility(index)"
+              class="sr-only peer"
+            />
             <div
               class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
-              :class="settings.displayMode === 'dark' ? 'peer-checked:bg-blue-600 bg-gray-700' : 'peer-checked:bg-blue-500 bg-gray-300'"
+              :class="
+                settings.displayMode === 'dark'
+                  ? 'peer-checked:bg-blue-600 bg-gray-700'
+                  : 'peer-checked:bg-blue-500 bg-gray-300'
+              "
             ></div>
           </label>
         </div>
@@ -85,8 +193,15 @@
     </div>
 
     <!-- Manage Presets -->
-       <div class="mt-8">
-      <h3 :class="['text-xl font-bold mb-4', settings.displayMode === 'light' ? 'text-black' : 'text-white']">Manage Presets</h3>
+    <div class="mt-8">
+      <h3
+        :class="[
+          'text-xl font-bold mb-4',
+          settings.displayMode === 'light' ? 'text-black' : 'text-white',
+        ]"
+      >
+        Manage Presets
+      </h3>
 
       <div class="flex gap-2 mb-4">
         <input
@@ -94,7 +209,11 @@
           type="text"
           placeholder="New preset name"
           class="flex-grow p-2 rounded-lg border"
-          :class="settings.displayMode === 'dark' ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+          :class="
+            settings.displayMode === 'dark'
+              ? 'bg-gray-900 text-white border-gray-600'
+              : 'bg-white text-gray-900 border-gray-300'
+          "
         />
         <button
           @click="savePreset"
@@ -116,9 +235,18 @@
               <input
                 v-model="editedPresetName"
                 class="p-1 rounded border text-sm"
-                :class="settings.displayMode === 'dark' ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                :class="
+                  settings.displayMode === 'dark'
+                    ? 'bg-gray-900 text-white border-gray-600'
+                    : 'bg-white text-gray-900 border-gray-300'
+                "
               />
-              <button @click="confirmRename(preset.name)" class="text-sm text-green-600 font-semibold">✔️</button>
+              <button
+                @click="confirmRename(preset.name)"
+                class="text-sm text-green-600 font-semibold"
+              >
+                ✔️
+              </button>
               <button @click="cancelRename" class="text-sm text-red-600 font-semibold">❌</button>
             </template>
             <template v-else>
@@ -218,8 +346,6 @@ async function applySavePath() {
   }
 }
 
-onMounted(loadPresets)
-
 async function loadPresets() {
   try {
     presets.value = (await window.myAPI.getPresets()) || {}
@@ -294,5 +420,80 @@ async function confirmRename(oldName) {
   } catch (error) {
     window.myAPI.logError('Error renaming preset:', error)
   }
+}
+
+const appVersion = ref('')
+const updateMessage = ref('')
+const updateAvailable = ref(false)
+const updateReady = ref(false)
+const downloadPercent = ref(0)
+const showUpdateUI = ref(false) // New flag to control UI visibility
+
+
+onMounted(async () => {
+  await loadPresets()
+  appVersion.value = await window.myAPI.getAppVersion()
+
+  // Check for updates automatically in background
+  checkForUpdateAuto()
+
+  window.myAPI.onUpdateAvailable(() => {
+    updateMessage.value = 'New update available. Click to download.'
+    updateAvailable.value = true
+    showUpdateUI.value = true // Show UI when update is found automatically
+  })
+
+  window.myAPI.onUpdateNotAvailable(() => {
+    // Only update message if UI is already shown (from manual check)
+    if (showUpdateUI.value) {
+      updateMessage.value = 'You are using the latest version.'
+    }
+    updateAvailable.value = false
+  })
+
+  window.myAPI.onUpdateDownloaded(() => {
+    updateMessage.value = 'Update ready. Restart to install.'
+    updateReady.value = true
+    showUpdateUI.value = true
+  })
+
+  window.myAPI.onDownloadProgress((percent) => {
+    downloadPercent.value = percent
+    updateMessage.value = `⬇Downloading update... ${percent}%`
+    showUpdateUI.value = true
+  })
+})
+
+// Automatic background check (won't show UI if no update)
+async function checkForUpdateAuto() {
+  const result = await window.myAPI.checkForUpdate()
+  if (result?.error) {
+    console.error('Auto update check error:', result.error)
+  }
+}
+
+// Manual check (will always show UI)
+async function checkForUpdate() {
+  showUpdateUI.value = true
+  updateMessage.value = '🔍 Checking for updates...'
+  const result = await window.myAPI.checkForUpdate()
+  if (result?.error) {
+    console.error('Update check error:', result.error)
+    updateMessage.value = 'Failed to check for updates.'
+  }
+}
+
+
+async function downloadUpdate() {
+  updateMessage.value = '⬇Downloading update...'
+  const result = await window.myAPI.downloadUpdate()
+  if (result?.error) {
+    console.error('Download update error:', result.error)
+    updateMessage.value = 'Failed to download update.'
+  }
+}
+
+function installUpdate() {
+  window.myAPI.installUpdate()
 }
 </script>

@@ -31,6 +31,35 @@ contextBridge.exposeInMainWorld('myAPI', {
   deletePreset: (name) => ipcRenderer.invoke('delete-preset', name),
   renamePreset: (oldName, newName) => ipcRenderer.invoke('rename-preset', oldName, newName),
 
+
+
+
+
+
+
+
+
+
+
+
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.send('quit-and-install'),
+
+  onUpdateAvailable: (callback) => ipcRenderer.on('update_available', callback),
+  onUpdateNotAvailable: (callback) => ipcRenderer.on('update_not_available', callback),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update_downloaded', callback),
+
+  onDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', (event, percent) => callback(percent))
+
+
+
+
+
+
+
+
 })
 
 

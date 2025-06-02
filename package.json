@@ -1,6 +1,6 @@
 {
   "name": "try-gl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "main": "src/main/index.js",
@@ -49,9 +49,9 @@
       "dist/**",
       "src/main/**",
       "src/preload.js",
-      "node_modules/**",
       "package.json"
     ],
+    "asar": true,
     "publish": {
       "provider": "github",
       "owner": "Anas-hisham",

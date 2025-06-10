@@ -14,68 +14,60 @@
       Settings
     </h2>
 
-
-
     <div class="my-12 text-center border-t border-gray-300 dark:border-gray-700 pt-8 px-4">
-    <p
-      :class="settings.displayMode === 'dark' ? 'text-gray-200' : 'text-gray-800'"
-      class="text-lg font-medium"
-    >
-      Version: {{ appVersion }}
-    </p>
-
-    <button
-      @click="checkForUpdate"
-      class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
-    >
-      Check for Update
-    </button>
-
-    <!-- Only show update UI if either manually checked or update is available -->
-    <div v-if="showUpdateUI">
-      <div v-if="updateAvailable" class="mt-4">
-        <button
-          @click="downloadUpdate"
-          class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
-        >
-          Download Update
-        </button>
-      </div>
-
       <p
-        class="mt-5 text-sm"
-        :class="settings.displayMode === 'dark' ? 'text-blue-300' : 'text-blue-700'"
+        :class="settings.displayMode === 'dark' ? 'text-gray-200' : 'text-gray-800'"
+        class="text-lg font-medium"
       >
-        {{ updateMessage }}
+        Version: {{ appVersion }}
       </p>
 
-      <!-- Optional progress bar -->
-      <div
-        v-if="downloadPercent > 0 && downloadPercent < 100"
-        class="w-full max-w-lg mx-auto bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden mt-4"
+      <button
+        @click="checkForUpdate"
+        class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
       >
-        <div
-          class="bg-blue-500 h-3 transition-all duration-300"
-          :style="{ width: downloadPercent + '%' }"
-        ></div>
-      </div>
+        Check for Update
+      </button>
 
-      <div v-if="updateReady" class="mt-6">
-        <button
-          @click="installUpdate"
-          class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded-lg shadow-md"
+      <!-- Only show update UI if either manually checked or update is available -->
+      <div v-if="showUpdateUI">
+        <div v-if="updateAvailable" class="mt-4">
+          <button
+            @click="downloadUpdate"
+            class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
+          >
+            Download Update
+          </button>
+        </div>
+
+        <p
+          class="mt-5 text-sm"
+          :class="settings.displayMode === 'dark' ? 'text-blue-300' : 'text-blue-700'"
         >
-          Restart & Install
-        </button>
+          {{ updateMessage }}
+        </p>
+
+        <!-- Optional progress bar -->
+        <div
+          v-if="downloadPercent > 0 && downloadPercent < 100"
+          class="w-full max-w-lg mx-auto bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden mt-4"
+        >
+          <div
+            class="bg-blue-500 h-3 transition-all duration-300"
+            :style="{ width: downloadPercent + '%' }"
+          ></div>
+        </div>
+
+        <div v-if="updateReady" class="mt-6">
+          <button
+            @click="installUpdate"
+            class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded-lg shadow-md"
+          >
+            Restart & Install
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-
-
-
-
-
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- Display Mode -->
@@ -149,7 +141,21 @@
         </button>
       </div>
     </div>
-
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap justify-between gap-4 my-6">
+      <button
+        @click="resetSettings"
+        class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded-lg shadow transition"
+      >
+        Reset to Defaults
+      </button>
+      <button
+        @click="clearInput"
+        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
+      >
+        Clear Input Data
+      </button>
+    </div>
     <!-- Manage Views -->
     <div class="mt-8">
       <h3
@@ -160,7 +166,7 @@
       >
         Manage Views
       </h3>
-      <div class="bg-opacity-50 p-4 rounded-lg">
+      <div class="bg-opacity-50 py-4 rounded-lg">
         <div
           v-for="(view, index) in withoutSettings()"
           :key="index"
@@ -223,7 +229,7 @@
         </button>
       </div>
 
-      <div class="p-6 pb-2 space-y-4">
+      <div class="py-6 pb-2 space-y-4">
         <div
           v-for="(preset, index) in presetList"
           :key="index"
@@ -252,7 +258,7 @@
             <template v-else>
               <button
                 @click="applyPreset(preset.name)"
-                class="px-3 py-1 rounded-lg font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
+                class="px-3 py-1 rounded font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
               >
                 {{ preset.name }}
               </button>
@@ -282,27 +288,13 @@
         </div>
       </div>
     </div>
-
-    <!-- Action Buttons -->
-    <div class="flex flex-wrap justify-between gap-4 pt-6">
-      <button
-        @click="resetSettings"
-        class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded-lg shadow transition"
-      >
-        Reset to Defaults
-      </button>
-      <button
-        @click="clearInput"
-        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
-      >
-        Clear Input Data
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 const { settings, allViews, setSettings, refreshView, resetSettings } = defineProps({
   settings: Object,
@@ -427,8 +419,7 @@ const updateMessage = ref('')
 const updateAvailable = ref(false)
 const updateReady = ref(false)
 const downloadPercent = ref(0)
-const showUpdateUI = ref(false) // New flag to control UI visibility
-
+const showUpdateUI = ref(false)
 
 onMounted(async () => {
   await loadPresets()
@@ -464,15 +455,14 @@ onMounted(async () => {
   })
 })
 
-// Automatic background check (won't show UI if no update)
 async function checkForUpdateAuto() {
   const result = await window.myAPI.checkForUpdate()
   if (result?.error) {
     console.error('Auto update check error:', result.error)
+    window.myAPI.logError('Auto update check error:', result.error)
   }
 }
 
-// Manual check (will always show UI)
 async function checkForUpdate() {
   showUpdateUI.value = true
   updateMessage.value = '🔍 Checking for updates...'
@@ -480,9 +470,9 @@ async function checkForUpdate() {
   if (result?.error) {
     console.error('Update check error:', result.error)
     updateMessage.value = 'Failed to check for updates.'
+    window.myAPI.logError('Update check error:', result.error)
   }
 }
-
 
 async function downloadUpdate() {
   updateMessage.value = '⬇Downloading update...'
@@ -490,6 +480,7 @@ async function downloadUpdate() {
   if (result?.error) {
     console.error('Download update error:', result.error)
     updateMessage.value = 'Failed to download update.'
+    window.myAPI.logError('Download update error:', result.error)
   }
 }
 

@@ -93,6 +93,7 @@
           ></i>
           <input
             type="number"
+            min="0"
             v-model.number="player['Economy Score']"
             placeholder="Economy Score"
             class="outline-hidden pl-5 w-full"
@@ -159,6 +160,7 @@
           ></i>
           <input
             type="number"
+            min="0"
             v-model.number="player.Kills"
             placeholder="Kills"
             class="outline-hidden pl-5 w-full"
@@ -183,6 +185,7 @@
           ></i>
           <input
             type="number"
+            min="0"
             v-model.number="player.Deaths"
             placeholder="Deaths"
             class="outline-hidden pl-5 w-full"
@@ -207,6 +210,7 @@
           ></i>
           <input
             type="number"
+            min="0"
             v-model.number="player.Assists"
             placeholder="Assists"
             class="outline-hidden pl-5 w-full"
@@ -245,11 +249,11 @@ const players = ref([
     'Player Name': '',
     'Team Name': '',
     'Favourite Weapon': '',
-    'Economy Score': '',
+    'Economy Score': 0,
     'Hero Image': '',
-    Kills: '',
-    Deaths: '',
-    Assists: '',
+    Kills: 0,
+    Deaths: 0,
+    Assists: 0,
   },
 ])
 
@@ -280,9 +284,10 @@ function handleFileChange(event, index, type) {
   }
 }
 
+
 function deleteHeroImage(index) {
   try {
-    players.value[index]['Hero Image'] = null
+    players.value[index]['Hero Image'] = ""
   } catch (err) {
     window.myAPI.logError(`Error deleting hero image: ${err.message}`)
   }
@@ -290,7 +295,7 @@ function deleteHeroImage(index) {
 
 async function savePlayers() {
   try {
-    const playersToSave = JSON.parse(JSON.stringify(players.value))
+    const playersToSave = JSON.parse(JSON.stringify(players.value[0]))
     await window.myAPI.savePlayer(JSON.stringify(playersToSave))
   } catch (err) {
     window.myAPI.logError(`Error saving players: ${err.message}`)

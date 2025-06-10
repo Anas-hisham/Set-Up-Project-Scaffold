@@ -2,7 +2,7 @@
 <template>
   <h1
     class="mt-12 text-4xl font-bold text-center"
-    :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+    :class="isDarkMode ? 'text-white' : 'text-black'"
   >
     Brackets view
   </h1>
@@ -16,8 +16,8 @@
         :index="index"
         :imageRefs="imageRefs"
         :flagRefs="flagRefs"
-        :handleFileChange="handleFileChange"
-        :triggerFileInput="triggerFileInput"
+        :onFileChange="handleFileChange"
+        :onTriggerInput="triggerFileInput"
         :displayMode="displayMode"
       />
     </div>
@@ -25,7 +25,7 @@
 
   <div class="flex justify-center mb-10">
     <button
-      @click="saveTeams"
+      @click="saveTeamsToDisk"
       class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
     >
       Save Teams
@@ -34,83 +34,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
 
-defineProps({ displayMode: String })
+const props = defineProps({ displayMode: String })
+const isDarkMode = computed(() => props.displayMode === 'dark')
 
 const teams = ref([])
+const imageRefs = ref([])
+const flagRefs = ref([])
 
-const createTeam = () => ({
+// ----- Factory -----
+const createEmptyTeam = () => ({
   'Team Image': '',
   'Team Flag': '',
   'Team Name': '',
   'Team Score': 0,
 })
 
-const teamsLoop = () => {
-  let TeamsReturn = []
-  for (let i = 0; i < 32; i++) {
-    TeamsReturn.push(createTeam())
-  }
-  teams.value = TeamsReturn
+// ----- Init Data -----
+const initializeTeams = () => {
+  teams.value = Array.from({ length: 32 }, createEmptyTeam)
 }
 
-const imageRefs = ref([])
-const flagRefs = ref([])
-
-function handleFileChange(event, index, type) {
+// ----- File Handling -----
+const handleFileChange = (event, index, field) => {
   const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      teams.value[index][type] = reader.result
+  if (!file) return
 
-    }
-    reader.readAsDataURL(file)
+  const reader = new FileReader()
+  reader.onload = () => {
+    teams.value[index][field] = reader.result
   }
+  reader.readAsDataURL(file)
 }
 
-function triggerFileInput(refsArray, index) {
+const triggerFileInput = (refsArray, index) => {
   refsArray[index]?.click()
 }
 
-async function saveTeams() {
+// ----- Storage Layer -----
+const saveTeamsToDisk = async () => {
   try {
     await window.myAPI.saveTeams(JSON.stringify(teams.value))
   } catch (err) {
-    window.myAPI.logError(`Error saving teams: ${err.message}`)
+    logError('Error saving teams', err)
   }
 }
 
-async function loadTeams() {
+const loadTeamsFromCache = async () => {
   try {
-    const loaded = await window.myAPI.loadTeamsCache()
-    if (Array.isArray(loaded)) {
-      loaded.forEach((team, index) => {
-        if (teams.value[index]) {
-          teams.value[index]['Team Image'] = team['Team Image'] || ''
-          teams.value[index]['Team Flag'] = team['Team Flag'] || ''
-          teams.value[index]['Team Name'] = team['Team Name'] || ''
-          teams.value[index]['Team Score'] = team['Team Score'] || 0
+    const cached = await window.myAPI.loadTeamsCache()
+    if (Array.isArray(cached)) {
+      cached.forEach((team, index) => {
+        if (!teams.value[index]) return
+        teams.value[index] = {
+          'Team Image': team['Team Image'] || '',
+          'Team Flag': team['Team Flag'] || '',
+          'Team Name': team['Team Name'] || '',
+          'Team Score': team['Team Score'] || 0,
         }
       })
     }
-  } catch (e) {
-    window.myAPI.logError(`Failed to load teams: ${e.message}`)
+  } catch (err) {
+    logError('Failed to load teams', err)
   }
 }
 
+const logError = (message, error) => {
+  window.myAPI.logError(`${message}: ${error.message}`)
+}
+
+// ----- Auto Save on Change -----
 watch(
   teams,
   () => {
     window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
   },
-  { deep: true },
+  { deep: true }
 )
 
+// ----- Lifecycle -----
 onMounted(() => {
-  teamsLoop()
-  loadTeams()
+  initializeTeams()
+  loadTeamsFromCache()
 })
 </script>

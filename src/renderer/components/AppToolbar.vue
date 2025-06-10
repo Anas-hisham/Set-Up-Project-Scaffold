@@ -9,7 +9,6 @@
       {{ currentTitle }}
     </h1>
     <div class="toolbar-actions flex gap-5">
-
       <button
         @click="openSettings"
         title="Settings"
@@ -28,6 +27,6 @@
 defineProps({
   currentTitle: String,
   openSettings: Function,
-  displayMode: String,  // new prop
+  displayMode: String,
 })
 </script>

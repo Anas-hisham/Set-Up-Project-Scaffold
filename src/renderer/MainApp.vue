@@ -6,16 +6,17 @@
     ]"
   >
     <AppToolbar
-      :currentTitle="visibleViews[selectedIndex]?.title || 'Settings'"
+      :currentTitle="currentTitle"
       :openSettings="openSettings"
       :displayMode="settings.displayMode"
     />
 
     <div class="grid grid-cols-15 flex-grow">
       <SideNav
-        v-model:selectedIndex="selectedIndex"
-        :views="visibleViews.filter((view) => view.title !== 'Settings')"
-        :selected="selected"
+        :class="[
+          settings.navMode === 'full' ? 'col-span-4 md:col-span-3 lg:col-span-2' : 'col-span-1 lg:col-span-1',
+        ]"
+        :views="visibleViews.filter((view) => view.path !== '/settings')"
         :navMode="settings.navMode"
         :displayMode="settings.displayMode"
       />
@@ -23,24 +24,25 @@
       <main
         :class="[
           'main-content p-6 min-h-full transition-colors duration-500',
-          settings.navMode === 'full' ? 'col-span-12 lg:col-span-13' : 'col-span-14 lg:col-span-14',
+          settings.navMode === 'full' ? 'col-span-11 md:col-span-12 lg:col-span-13' : 'col-span-14 lg:col-span-14',
           settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black',
         ]"
       >
-        <BracketView
-          v-if="selectedIndex === 0 && visibleViews[0]?.visible !== false"
+        <Brackets
+          v-if="route.path === '/brackets'"
           :displayMode="settings.displayMode"
         />
-        <PlayersStatsView
-          v-else-if="selectedIndex === 1 && visibleViews[1]?.visible !== false"
+        <PlayersStats
+          v-else-if="route.path === '/players'"
           :displayMode="settings.displayMode"
         />
-        <TodaysMatchesView
-          v-else-if="selectedIndex === 2 && visibleViews[2]?.visible !== false"
+        <TodayxMatches
+          v-else-if="route.path === '/matches'"
           :displayMode="settings.displayMode"
         />
-        <SettingsView
-          v-else-if="selectedIndex === 3"
+        <Settings
+          v-else-if="route.path === '/settings'"
+          :displayMode="settings.displayMode"
           :settings="settings"
           :allViews="allViews"
           :setSettings="setSettings"
@@ -53,51 +55,47 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-
+import { useRouter, useRoute } from 'vue-router'
 import SideNav from './components/SideNav.vue'
 import AppToolbar from './components/AppToolbar.vue'
+import Brackets from './views/Brackets.vue'
+import PlayersStats from './views/PlayersStats.vue'
+import TodayxMatches from './views/TodaysMatches.vue'
+import Settings from './views/Settings.vue'
 
-import BracketView from './views/Brackets.vue'
-import PlayersStatsView from './views/PlayersStats.vue'
-import TodaysMatchesView from './views/TodaysMatches.vue'
-import SettingsView from './views/Settings.vue'
-
-const selectedIndex = ref(0)
-
-function selected(index) {
-  selectedIndex.value = index
-}
+const router = useRouter()
+const route = useRoute()
 
 const defaultSettings = {
   displayMode: 'dark',
   navMode: 'full',
   savePath: '',
   views: [
-    { title: 'Brackets View', component: BracketView, visible: true },
-    { title: 'Players Stats', component: PlayersStatsView, visible: true },
-    { title: "Today's Matches", component: TodaysMatchesView, visible: true },
-    { title: 'Settings', component: SettingsView, visible: true },
+    { title: 'Brackets View', path: '/brackets', visible: true },
+    { title: 'Players Stats', path: '/players', visible: true },
+    { title: "Today's Matches", path: '/matches', visible: true },
+    { title: 'Settings', path: '/settings', visible: true },
   ],
 }
 
 const settings = ref({ ...defaultSettings })
 
-// Computed property for visible views
 const visibleViews = computed(() => {
   return settings.value.views.filter((view) => view.visible)
 })
 
-// All views including hidden ones
 const allViews = computed(() => {
   return settings.value.views
 })
 
-// Load settings from Electron on mount
+const currentTitle = computed(() => {
+  return route.meta?.title || 'Settings'
+})
+
 onMounted(async () => {
   try {
     const savedSettings = await window.myAPI.getViewSettingsCache()
     if (savedSettings) {
-      // Merge with default to ensure new views are added
       const mergedViews = defaultSettings.views.map((defaultView) => {
         const savedView = savedSettings.views?.find((v) => v.title === defaultView.title)
         return savedView ? { ...defaultView, visible: savedView.visible } : defaultView
@@ -108,56 +106,54 @@ onMounted(async () => {
         ...savedSettings,
         views: mergedViews,
       }
+
+      if (!visibleViews.value.some((view) => view.path === route.path)) {
+        const firstVisible = visibleViews.value[0]
+        if (firstVisible) {
+          router.push(firstVisible.path)
+        }
+      }
     }
   } catch (err) {
     window.myAPI.logError(`Error loading settings: ${err.message}`)
   }
 })
 
-watch(settings, async (newSettings) => {
+watch(
+  settings,
+  async (newSettings) => {
     try {
-      // Convert reactive to plain object before sending
       const plainSettings = JSON.parse(JSON.stringify(newSettings))
       await window.myAPI.saveViewSettingsCache(plainSettings)
     } catch (err) {
       window.myAPI.logError(`Error saving settings: ${err.message}`)
     }
   },
-  { deep: true },
+  { deep: true }
 )
 
 function setSettings(newSettings) {
   settings.value = { ...settings.value, ...newSettings }
 }
+
 function resetSettings() {
-  // Reset to default views configuration
   settings.value = {
     ...defaultSettings,
     savePath: '',
-    views: defaultSettings.views.map((view) => ({ ...view })), // Create fresh copies
+    views: defaultSettings.views.map((view) => ({ ...view })),
   }
-
-  // Also clear custom path from persistent store
   window.myAPI.setCustomSavePath('')
+
 }
 
-const previousIndex = ref(0)
-
 function openSettings() {
-  const visible = visibleViews.value
-  if (visible.length === 0) return
-
-  const settingsIndex = settings.value.views.findIndex((v) => v.title === 'Settings')
-
-  if (selectedIndex.value === settingsIndex) {
-    // Switch back to the first visible view instead of hardcoded index
-    const firstVisibleIndex = settings.value.views.findIndex((v) => v.visible)
-    if (firstVisibleIndex !== -1) {
-      selectedIndex.value = firstVisibleIndex
+  if (route.path === '/settings') {
+    const firstVisible = visibleViews.value.find((view) => view.path !== '/settings')
+    if (firstVisible) {
+      router.push(firstVisible.path)
     }
   } else {
-    previousIndex.value = selectedIndex.value
-    selectedIndex.value = settingsIndex
+    router.push('/settings')
   }
 }
 </script>

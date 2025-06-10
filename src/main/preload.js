@@ -32,16 +32,6 @@ contextBridge.exposeInMainWorld('myAPI', {
   renamePreset: (oldName, newName) => ipcRenderer.invoke('rename-preset', oldName, newName),
 
 
-
-
-
-
-
-
-
-
-
-
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
   downloadUpdate: () => ipcRenderer.invoke('download-update'),
@@ -52,12 +42,6 @@ contextBridge.exposeInMainWorld('myAPI', {
   onUpdateDownloaded: (callback) => ipcRenderer.on('update_downloaded', callback),
 
   onDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', (event, percent) => callback(percent))
-
-
-
-
-
-
 
 
 })

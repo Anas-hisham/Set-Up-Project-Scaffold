@@ -1,9 +1,8 @@
 @import 'tailwindcss';
 
-
-
-
-
 #app {
   text-align: center;
+}
+button {
+  cursor: pointer;
 }

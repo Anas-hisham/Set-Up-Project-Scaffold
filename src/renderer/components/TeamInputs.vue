@@ -126,6 +126,7 @@
       ></i>
       <input
         type="number"
+        min="0"
         v-model.number="team['Team Score']"
         placeholder="Team Score"
         class="outline-hidden pl-5 w-full"

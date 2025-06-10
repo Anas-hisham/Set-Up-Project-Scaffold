@@ -17,7 +17,7 @@
       </h2>
 
       <!-- Date Input -->
-      <div class="p-4 mb-10">
+      <div class="p-4 mb-10" :class="displayMode === 'dark' ? 'bg-[#1f2937]' : 'bg-gray-100'">
         <div class="relative">
           <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"></i>
           <input

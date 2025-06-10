@@ -1,31 +1,31 @@
+<!-- src/components/SideNav.vue -->
 <template>
   <nav
     :class="[
-      'p-4 transition-width duration-300 ease-in-out overflow-hidden w-full',
-      navMode === 'full' ? fullWidthClass : miniWidthClass,
-      displayMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black',
+      'side-nav transition-all duration-300 flex flex-col border-r',
+      displayMode === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200',
     ]"
   >
     <div class="flex justify-center items-center h-[calc(100vh-60px)]">
-      <ul style="list-style: none; padding: 0">
-        <li
-          v-for="(view, index) in views"
-          :key="view.title"
-          :class="[
-            'rounded mb-2 px-4 py-2 cursor-pointer whitespace-nowrap',
-            selectedIndex === index
-              ? displayMode === 'dark'
-                ? 'bg-blue-600 text-white'
-                : 'bg-blue-400 text-black'
-              : '',
-            navMode === 'mini' ? 'text-center px-2' : '',
-          ]"
-          @click="selected(index)"
-          :title="navMode === 'mini' ? view.title : ''"
-        >
-
-        <span v-if="navMode === 'mini'">{{ view.title.charAt(0) }}</span>
-          <span v-else>{{ view.title }}</span>
+      <ul class="space-y-2 p-2 w-fit">
+        <li v-for="view in views" :key="view.path">
+          <router-link
+            :to="view.path"
+            :class="[
+              'flex items-center p-2 rounded-lg transition-colors',
+              navMode === 'full' ? 'justify-start' : 'justify-center',
+              displayMode === 'dark' ? ' text-white' : ' text-gray-900',
+              $route.path === view.path
+                ? displayMode === 'dark'
+                  ? 'bg-blue-600'
+                  : 'bg-blue-600'
+                : '',
+            ]"
+            :title="navMode === 'mini' ? view.title : ''"
+          >
+            <span v-if="navMode === 'full'" class="">{{ view.title }}</span>
+            <span v-else class="font-bold">{{ getFirstLetter(view.title) }}</span>
+          </router-link>
         </li>
       </ul>
     </div>
@@ -33,16 +33,17 @@
 </template>
 
 <script setup>
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
 defineProps({
   views: Array,
-  selectedIndex: Number,
-  selected: Function,
-  displayMode: String,
   navMode: String,
+  displayMode: String,
 })
 
-const fullWidthClass = 'col-span-3 lg:col-span-2 w-auto'
-const miniWidthClass = 'w-16 col-span-1'
+const getFirstLetter = (title) => {
+  return title && title.length > 0 ? title.charAt(0) : '?'
+}
 </script>
-
-<style scoped></style>

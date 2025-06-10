@@ -9,8 +9,46 @@ import pkg from 'electron-updater';
 
 const { autoUpdater } = pkg;
 const store = new Store()
+/*
+
+In CommonJS, we have __dirname by default.
+But in ES modules, we don’t. So we recreate it manually using this pattern:
+
+*/
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+/*
+
+console.log(import.meta.url) ➜ 'file:///home/anas/projects/myApp/utils/test.js'
+
+const filePath = fileURLToPath(import.meta.url);
+console.log(filePath) ➜ '/home/anas/projects/myApp/utils/test.js'
+
+const dirPath = path.dirname('/home/anas/projects/myApp/utils/test.js');
+console.log(dirPath) ➜ '/home/anas/projects/myApp/utils'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+console.log(__dirname) ➜ '/home/anas/projects/myApp/utils'
+
+*/
+
+/*
+
+Why we Use path.join?
+
+1 - It automatically handles slashes (/ or \)
+
+2 - Works on Windows, Linux, macOS
+
+3 - Clean and readable code
+
+const fullPath = path.join('src', 'components', 'App.js');
+console.log(fullPath); ➜ src/components/App.js
+
+const jsonPath = path.join(__dirname, 'data', 'info.json');
+console.log(jsonPath); ➜ /home/anas/projects/myApp/utils/data/info.json
+
+*/
 
 let mainWindow
 
@@ -23,8 +61,10 @@ if (!customSavePath || typeof customSavePath !== 'string' || customSavePath.trim
 console.log('Using save path:', customSavePath)
 const logFilePath = path.join(customSavePath, 'errors.log')
 
+
+
 function appendToLog(message) {
-  const logMessage = `[${new Date()}] ${message}\n`
+  const logMessage = `[${new Date().toISOString()}] ${message}\n`
   fs.appendFileSync(logFilePath, logMessage)
 }
 
@@ -36,10 +76,10 @@ let teamsImageFolder
 function ensureFoldersExist(basePath) {
   jsonFolderPath = path.join(basePath, 'jsons')
   playerImageFolder = path.join(basePath, 'players-images')
-  matchImageFolder = path.join(basePath, 'match-images')
+  matchImageFolder = path.join(basePath, 'matches-images')
   teamsImageFolder = path.join(basePath, 'brackets-images')
 
-  for (const folder of [jsonFolderPath, playerImageFolder, matchImageFolder, teamsImageFolder]) {
+  for (const folder of [jsonFolderPath, playerImageFolder, matchImageFolder, teamsImageFolder,]) {
     if (!fs.existsSync(folder)) {
       fs.mkdirSync(folder, { recursive: true })
     }
@@ -47,6 +87,10 @@ function ensureFoldersExist(basePath) {
 }
 
 ensureFoldersExist(customSavePath)
+
+if (!fs.existsSync(logFilePath)) {
+  fs.writeFileSync(logFilePath, '')
+}
 
 function getFilePaths() {
   return {
@@ -110,19 +154,40 @@ ipcMain.handle('save-teams', async (_event, data) => {
     for (const team of teams) {
       for (const field of ['Team Image', 'Team Flag']) {
         if (team[field] && team[field].startsWith('data:image')) {
+          //  data:image/png;base64,xxxxxxx
+
           const ext = team[field].substring(
             team[field].indexOf('/') + 1,
             team[field].indexOf(';')
           )
+          // Extract the image extension (like png, jpeg):
           const base64Data = team[field].split(',')[1]
+          // "data:image/jpeg;base64,xxxxxxxxxxxx"
+
           const filename = `team-${Date.now()}-${field.replace(/\s/g, '')}.${ext}`
+          // Generate a unique filename:
           const filePath = path.join(teamsImageFolder, filename)
+          // Join folder + filename to get full image path:
+          // '/home/anas/projects/teamImages/team-1717840234000-TeamImage.jpeg'
+
           fs.writeFileSync(filePath, base64Data, 'base64')
+          // Write the base64 image to a file:
+          // Creates a real image file on disk from the base64 string.
+          // 'base64' means it decodes the string before saving.
+
           team[field] = filePath
+          /*
+          So now instead of:
+          "Team Image": "data:image/jpeg;base64,..."
+          It becomes:
+          "Team Image": "/home/anas/projects/teamImages/team-1717840234000-TeamImage.jpeg"
+          */
         }
       }
     }
+    /*
 
+    */
     fs.writeFileSync(teamsFilePath, JSON.stringify(teams, null, 2), 'utf-8')
     return { success: true }
   } catch (error) {
@@ -140,8 +205,7 @@ ipcMain.handle('save-player-cache', (_event, data) => {
 ipcMain.handle('save-player', async (_event, data) => {
   try {
     const { playersFilePath } = getFilePaths()
-    const players = JSON.parse(data)
-    for (const player of players) {
+    const player = JSON.parse(data)
       if (player['Hero Image'] && player['Hero Image'].startsWith('data:image')) {
         const ext = player['Hero Image'].substring(
           player['Hero Image'].indexOf('/') + 1,
@@ -153,8 +217,8 @@ ipcMain.handle('save-player', async (_event, data) => {
         fs.writeFileSync(filePath, base64Data, 'base64')
         player['Hero Image'] = filePath
       }
-    }
-    fs.writeFileSync(playersFilePath, JSON.stringify(players, null, 2), 'utf-8')
+
+    fs.writeFileSync(playersFilePath, JSON.stringify(player, null, 2), 'utf-8')
     return { success: true }
   } catch (error) {
     console.error('Error saving players:', error)
@@ -179,14 +243,15 @@ ipcMain.handle('save-matches', async (_event, data) => {
 
       for (const field of ['Left Team Logo', 'Right Team Logo', 'Left Team Flag', 'Right Team Flag']) {
         if (match[field] && match[field].startsWith('data:image')) {
-          const matches = match[field].match(/^data:image\/(\w+);base64,(.+)$/)
-          if (matches) {
-            const [_, ext, base64Data] = matches
-            const filename = `match-${Date.now()}-${field.replace(/\s+/g, '-')}.${ext}`
-            const filePath = path.join(matchImageFolder, filename)
-            fs.writeFileSync(filePath, base64Data, 'base64')
-            match[field] = filePath
-          }
+          const ext = match[field].substring(
+            match[field].indexOf('/') + 1,
+            match[field].indexOf(';')
+          )
+          const base64Data = match[field].split(',')[1]
+          const filename = `match-${Date.now()}-${field.replace(/\s/g, '')}.${ext}`
+          const filePath = path.join(matchImageFolder, filename)
+          fs.writeFileSync(filePath, base64Data, 'base64')
+          match[field] = filePath
         }
       }
 
@@ -198,12 +263,14 @@ ipcMain.handle('save-matches', async (_event, data) => {
       JSON.stringify({ Info: parsed.Info, Matches: processedMatches }, null, 2),
       'utf-8'
     )
+
     return { success: true }
   } catch (error) {
     console.error('Error saving matches:', error)
     return { success: false, error: error.message }
   }
 })
+
 
 ipcMain.handle('save-settings-cache', async (_event, data) => {
   try {
@@ -334,12 +401,11 @@ autoUpdater.on('download-progress', (progressObj) => {
 
 
 
-// Expose update check to renderer
 ipcMain.handle('check-for-update', async () => {
   try {
     await autoUpdater.checkForUpdates()
   } catch (err) {
-    console.error('Error checking for update:', err) // Log error to console
+    console.error('Error checking for update:', err)
     return { error: err.message }
   }
 })
@@ -348,7 +414,7 @@ ipcMain.handle('download-update', async () => {
   try {
     await autoUpdater.downloadUpdate()
   } catch (err) {
-    console.error('Error downloading update:', err) // Log error to console
+    console.error('Error downloading update:', err)
     return { error: err.message }
   }
 })
@@ -364,16 +430,10 @@ ipcMain.on('quit-and-install', () => {
 
 
 
-
-
-
-
-
-
-
 ipcMain.on('log-error', (_event, message) => {
   appendToLog(message)
 })
+
 
 process.on('uncaughtException', (err) => {
   appendToLog(`Uncaught Exception: ${err.stack || err.message}`)
@@ -382,6 +442,8 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   appendToLog(`Unhandled Rejection: ${reason}`)
 })
+
+
 
 app.whenReady()
   .then(() => {

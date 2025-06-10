@@ -1,5 +1,5 @@
 <template>
-  <div :class="displayMode === 'light' ? 'light-mode' : ''">
+  <div :class="displayMode === 'light' ? 'light-mode' : 'dark-mode'">
     <h1
       class="mt-12 text-4xl font-bold text-center mb-8"
       :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
@@ -8,7 +8,7 @@
     </h1>
 
     <div class="px-4 py-3 mb-10">
-      <!-- Info -->
+      <!-- Info Header -->
       <h2
         class="font-semibold uppercase text-sm w-full py-4 text-start px-5"
         :class="displayMode === 'dark' ? 'text-white bg-[#22292f]' : 'text-black bg-gray-200'"
@@ -18,12 +18,19 @@
 
       <!-- Date Input -->
       <div class="p-4 mb-10" :class="displayMode === 'dark' ? 'bg-[#1f2937]' : 'bg-gray-100'">
+        <label
+          v-if="matchInfo"
+          class="text-sm font-semibold block mb-1"
+          :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+        >
+          Date
+        </label>
         <div class="relative">
           <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"></i>
           <input
             type="date"
             placeholder="Date"
-            v-model="matchInfo.Date"
+            v-model="matchInfo.date"
             class="pl-8 w-full border py-2 px-3"
             max="9999-12-31"
           />
@@ -36,7 +43,7 @@
           class="font-semibold uppercase text-sm w-full py-4 text-start px-5"
           :class="displayMode === 'dark' ? 'text-white bg-[#22292f]' : 'text-black bg-gray-200'"
         >
-          {{ matchIndex === 0 ? 'FIRST MATCH' : 'SECOND MATCH' }}
+          {{ matchIndex === 0 ? 'first Match' : 'secondMatch' }}
         </h2>
 
         <div
@@ -45,17 +52,26 @@
         >
           <!-- Match Time -->
           <div class="relative" :class="displayMode === 'dark' ? 'text-white' : 'text-black'">
-            <i
-              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+            <label
+              class="text-sm font-semibold block mb-1"
               :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-            ></i>
-            <input
-              type="time"
-              placeholder="Match Time"
-              v-model="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Match Time']"
-              class="pl-8 w-full border py-2 px-2.5 placeholder-opacity-100"
-            />
+            >
+              Match Time
+            </label>
+            <div class="relative">
+              <i
+                class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+                :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+              ></i>
+              <input
+                type="time"
+                placeholder="Match Time"
+                v-model="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch'].matchTime"
+                class="pl-8 w-full border py-2 px-2.5 placeholder-opacity-100"
+              />
+            </div>
           </div>
+
           <!-- Team Names -->
           <div
             class="grid grid-cols-2 gap-4"
@@ -63,36 +79,50 @@
           >
             <!-- Left Team Name -->
             <div class="relative">
-              <i
-                class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              <label
+                class="text-sm font-semibold block mb-1"
                 :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-              ></i>
-              <input
-                type="text"
-                placeholder="Left Team Name"
-                v-model="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Name']"
-                class="pl-8 w-full border py-2 placeholder-opacity-100"
-              />
+              >
+                Left Team Name
+              </label>
+              <div class="relative">
+                <i
+                  class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+                  :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+                ></i>
+                <input
+                  type="text"
+                  placeholder="Left Team Name"
+                  v-model="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch'].leftTeamName"
+                  class="pl-8 w-full border py-2 placeholder-opacity-100"
+                />
+              </div>
             </div>
 
             <!-- Right Team Name -->
             <div class="relative">
-              <i
-                class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              <label
+                class="text-sm font-semibold block mb-1"
                 :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-              ></i>
-              <input
-                type="text"
-                placeholder="Right Team Name"
-                v-model="
-                  match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Name']
-                "
-                class="pl-8 w-full border py-2 placeholder-opacity-100"
-              />
+              >
+                Right Team Name
+              </label>
+              <div class="relative">
+                <i
+                  class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+                  :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+                ></i>
+                <input
+                  type="text"
+                  placeholder="Right Team Name"
+                  v-model="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch'].rightTeamName"
+                  class="pl-8 w-full border py-2 placeholder-opacity-100"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Images -->
+          <!-- Logo and Flag Uploads (labels not needed for images, using span instead) -->
           <div
             class="grid grid-cols-2 gap-4"
             :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
@@ -104,27 +134,27 @@
                 <input
                   type="file"
                   class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'Left Team Logo', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'Left Team Logo')"
+                  :ref="(el) => setFileInputRef(matchIndex, 'leftTeamLogo', el)"
+                  @change="(e) => uploadImage(e, matchIndex, 'leftTeamLogo')"
                 />
                 <img
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Logo']"
-                  :src="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Logo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
+                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Left Team Logo')"
+                  @click="triggerFileInput(matchIndex, 'leftTeamLogo')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Logo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'Left Team Logo')"
+                  @click="() => deleteImage(matchIndex, 'leftTeamLogo')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Left Team Logo')"
+                  @click="triggerFileInput(matchIndex, 'leftTeamLogo')"
                 >
                   + ADD
                 </button>
@@ -138,27 +168,27 @@
                 <input
                   type="file"
                   class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'Right Team Logo', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'Right Team Logo')"
+                  :ref="(el) => setFileInputRef(matchIndex, 'rightTeamLogo', el)"
+                  @change="(e) => uploadImage(e, matchIndex, 'rightTeamLogo')"
                 />
                 <img
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Logo']"
-                  :src="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Logo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
+                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Right Team Logo')"
+                  @click="triggerFileInput(matchIndex, 'rightTeamLogo')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Logo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'Right Team Logo')"
+                  @click="() => deleteImage(matchIndex, 'rightTeamLogo')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Right Team Logo')"
+                  @click="triggerFileInput(matchIndex, 'rightTeamLogo')"
                 >
                   + ADD
                 </button>
@@ -172,27 +202,27 @@
                 <input
                   type="file"
                   class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'Left Team Flag', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'Left Team Flag')"
+                  :ref="(el) => setFileInputRef(matchIndex, 'leftTeamFlag', el)"
+                  @change="(e) => uploadImage(e, matchIndex, 'leftTeamFlag')"
                 />
                 <img
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Flag']"
-                  :src="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Flag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
+                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Left Team Flag')"
+                  @click="triggerFileInput(matchIndex, 'leftTeamFlag')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Left Team Flag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'Left Team Flag')"
+                  @click="() => deleteImage(matchIndex, 'leftTeamFlag')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Left Team Flag')"
+                  @click="triggerFileInput(matchIndex, 'leftTeamFlag')"
                 >
                   + ADD
                 </button>
@@ -206,27 +236,27 @@
                 <input
                   type="file"
                   class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'Right Team Flag', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'Right Team Flag')"
+                  :ref="(el) => setFileInputRef(matchIndex, 'rightTeamFlag', el)"
+                  @change="(e) => uploadImage(e, matchIndex, 'rightTeamFlag')"
                 />
                 <img
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Flag']"
-                  :src="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Flag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
+                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Right Team Flag')"
+                  @click="triggerFileInput(matchIndex, 'rightTeamFlag')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'First Match' : 'Second Match']['Right Team Flag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'Right Team Flag')"
+                  @click="() => deleteImage(matchIndex, 'rightTeamFlag')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'Right Team Flag')"
+                  @click="triggerFileInput(matchIndex, 'rightTeamFlag')"
                 >
                   + ADD
                 </button>
@@ -236,6 +266,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Save Button -->
     <div class="flex justify-center">
       <button
         @click="saveMatches"
@@ -258,30 +290,30 @@ defineProps({
 })
 
 const matchInfo = ref({
-  Date: '',
+  date: '',
 })
 
 const matches = ref([
   {
-    'First Match': {
-      'Match Time': '',
-      'Left Team Name': '',
-      'Right Team Name': '',
-      'Left Team Logo': '',
-      'Right Team Logo': '',
-      'Left Team Flag': '',
-      'Right Team Flag': '',
+    firstMatch: {
+      matchTime: '',
+      leftTeamName: '',
+      rightTeamName: '',
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
     },
   },
   {
-    'Second Match': {
-      'Match Time': '',
-      'Left Team Name': '',
-      'Right Team Name': '',
-      'Left Team Logo': '',
-      'Right Team Logo': '',
-      'Left Team Flag': '',
-      'Right Team Flag': '',
+    secondMatch: {
+      matchTime: '',
+      leftTeamName: '',
+      rightTeamName: '',
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
     },
   },
 ])
@@ -304,24 +336,27 @@ function uploadImage(event, matchIndex, field) {
 
   const reader = new FileReader()
   reader.onload = () => {
-    const matchKey = matchIndex === 0 ? 'First Match' : 'Second Match'
+    const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
+
     matches.value[matchIndex][matchKey][field] = reader.result
   }
   reader.readAsDataURL(file)
 }
 
 function deleteImage(matchIndex, field) {
-  const matchKey = matchIndex === 0 ? 'First Match' : 'Second Match'
+  const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
+
   matches.value[matchIndex][matchKey][field] = ''
 }
 
 async function saveMatches() {
   try {
     const dataToSave = {
-      Info: matchInfo.value,
-      Matches: matches.value,
+      info: matchInfo.value,
+      matches: matches.value,
     }
     await window.myAPI.saveMatches(JSON.stringify(dataToSave))
+    alert('Matches saved successfully!')
   } catch (err) {
     console.error('Error saving Matches:', err)
     window.myAPI.logError(`Error saving Matches: ${err.message}`)
@@ -334,12 +369,12 @@ async function loadDataCache() {
     if (loaded) {
       const parsedData = typeof loaded === 'string' ? JSON.parse(loaded) : loaded
 
-      if (parsedData.Info) {
-        matchInfo.value.Date = parsedData.Info.Date || ''
+      if (parsedData.info) {
+        matchInfo.value.date = parsedData.info.date || ''
       }
 
-      if (parsedData.Matches && Array.isArray(parsedData.Matches)) {
-        matches.value = parsedData.Matches
+      if (parsedData.matches && Array.isArray(parsedData.matches)) {
+        matches.value = parsedData.matches
       }
     }
   } catch (e) {
@@ -352,8 +387,8 @@ watch(
   [() => matchInfo.value, () => matches.value],
   () => {
     const dataToSave = {
-      Info: matchInfo.value,
-      Matches: matches.value,
+      info: matchInfo.value,
+      matches: matches.value,
     }
     window.myAPI.saveMatchesCache(JSON.stringify(dataToSave))
   },
@@ -366,8 +401,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-input[type='date'],
-input[type='time'] {
+.dark-mode input[type='date'],
+.dark-mode input[type='time'] {
   color-scheme: dark;
 }
 input {
@@ -375,8 +410,6 @@ input {
   border-radius: 4px;
   border: 1px solid #555;
   background-color: transparent;
-  color: white;
-  caret-color: white;
   transition: border-color 0.2s;
 }
 

@@ -1,4 +1,3 @@
-<!-- BracketsView.vue -->
 <template>
   <h1
     class="mt-12 text-4xl font-bold text-center"
@@ -16,8 +15,8 @@
         :index="index"
         :imageRefs="imageRefs"
         :flagRefs="flagRefs"
-        :onFileChange="handleFileChange"
-        :onTriggerInput="triggerFileInput"
+        :handleFileChange="handleFileChange"
+        :triggerFileInput="triggerFileInput"
         :displayMode="displayMode"
       />
     </div>
@@ -46,10 +45,10 @@ const flagRefs = ref([])
 
 // ----- Factory -----
 const createEmptyTeam = () => ({
-  'Team Image': '',
-  'Team Flag': '',
-  'Team Name': '',
-  'Team Score': 0,
+  teamImage: '',
+  teamFlag: '',
+  teamName: '',
+  teamScore: '',
 })
 
 // ----- Init Data -----
@@ -77,6 +76,7 @@ const triggerFileInput = (refsArray, index) => {
 const saveTeamsToDisk = async () => {
   try {
     await window.myAPI.saveTeams(JSON.stringify(teams.value))
+    alert('Teams saved successfully!')
   } catch (err) {
     logError('Error saving teams', err)
   }
@@ -89,10 +89,10 @@ const loadTeamsFromCache = async () => {
       cached.forEach((team, index) => {
         if (!teams.value[index]) return
         teams.value[index] = {
-          'Team Image': team['Team Image'] || '',
-          'Team Flag': team['Team Flag'] || '',
-          'Team Name': team['Team Name'] || '',
-          'Team Score': team['Team Score'] || 0,
+          teamImage: team.teamImage || '',
+          teamFlag: team.teamFlag || '',
+          teamName: team.teamName || '',
+          teamScore: team.teamScore || '',
         }
       })
     }
@@ -111,7 +111,7 @@ watch(
   () => {
     window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
   },
-  { deep: true }
+  { deep: true },
 )
 
 // ----- Lifecycle -----

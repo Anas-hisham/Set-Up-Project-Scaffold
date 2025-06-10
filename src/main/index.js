@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
@@ -58,6 +58,11 @@ if (!customSavePath || typeof customSavePath !== 'string' || customSavePath.trim
   customSavePath = app.getPath('userData')
 }
 
+ipcMain.handle('get-default-save-path', () => {
+  return customSavePath
+})
+
+
 console.log('Using save path:', customSavePath)
 const logFilePath = path.join(customSavePath, 'errors.log')
 
@@ -68,6 +73,18 @@ function appendToLog(message) {
   fs.appendFileSync(logFilePath, logMessage)
 }
 
+
+
+function ensureLogExist(folderPath) {
+  const logFile = path.join(folderPath, 'errors.log')
+  if (!fs.existsSync(logFile)) {
+    fs.writeFileSync(logFile, '')
+  }
+}
+
+ensureLogExist(customSavePath)
+
+
 let jsonFolderPath
 let playerImageFolder
 let matchImageFolder
@@ -75,9 +92,10 @@ let teamsImageFolder
 
 function ensureFoldersExist(basePath) {
   jsonFolderPath = path.join(basePath, 'jsons')
-  playerImageFolder = path.join(basePath, 'players-images')
-  matchImageFolder = path.join(basePath, 'matches-images')
-  teamsImageFolder = path.join(basePath, 'brackets-images')
+   const imagesFolder = path.join(basePath, 'images')
+  playerImageFolder = path.join(imagesFolder, 'players-images')
+  matchImageFolder = path.join(imagesFolder, 'matches-images')
+  teamsImageFolder = path.join(imagesFolder, 'brackets-images')
 
   for (const folder of [jsonFolderPath, playerImageFolder, matchImageFolder, teamsImageFolder,]) {
     if (!fs.existsSync(folder)) {
@@ -88,9 +106,6 @@ function ensureFoldersExist(basePath) {
 
 ensureFoldersExist(customSavePath)
 
-if (!fs.existsSync(logFilePath)) {
-  fs.writeFileSync(logFilePath, '')
-}
 
 function getFilePaths() {
   return {
@@ -132,6 +147,7 @@ ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
     store.set('customSavePath', newPath)
     customSavePath = newPath
     ensureFoldersExist(customSavePath)
+    ensureLogExist(customSavePath)
 
     return { success: true }
   } catch (error) {
@@ -152,7 +168,7 @@ ipcMain.handle('save-teams', async (_event, data) => {
     const teams = JSON.parse(data)
 
     for (const team of teams) {
-      for (const field of ['Team Image', 'Team Flag']) {
+      for (const field of ['teamImage', 'teamFlag']) {
         if (team[field] && team[field].startsWith('data:image')) {
           //  data:image/png;base64,xxxxxxx
 
@@ -206,17 +222,17 @@ ipcMain.handle('save-player', async (_event, data) => {
   try {
     const { playersFilePath } = getFilePaths()
     const player = JSON.parse(data)
-      if (player['Hero Image'] && player['Hero Image'].startsWith('data:image')) {
-        const ext = player['Hero Image'].substring(
-          player['Hero Image'].indexOf('/') + 1,
-          player['Hero Image'].indexOf(';')
-        )
-        const base64Data = player['Hero Image'].split(',')[1]
-        const filename = `hero-${Date.now()}.${ext}`
-        const filePath = path.join(playerImageFolder, filename)
-        fs.writeFileSync(filePath, base64Data, 'base64')
-        player['Hero Image'] = filePath
-      }
+    if (player.heroImage && player.heroImage.startsWith('data:image')) {
+      const ext = player.heroImage.substring(
+        player.heroImage.indexOf('/') + 1,
+        player.heroImage.indexOf(';')
+      )
+      const base64Data = player.heroImage.split(',')[1]
+      const filename = `hero-${Date.now()}.${ext}`
+      const filePath = path.join(playerImageFolder, filename)
+      fs.writeFileSync(filePath, base64Data, 'base64')
+      player.heroImage = filePath
+    }
 
     fs.writeFileSync(playersFilePath, JSON.stringify(player, null, 2), 'utf-8')
     return { success: true }
@@ -232,16 +248,17 @@ ipcMain.handle('save-matches-cache', (_event, data) => {
   return true
 })
 
+
 ipcMain.handle('save-matches', async (_event, data) => {
   try {
     const { matchesFilePath } = getFilePaths()
     const parsed = JSON.parse(data)
 
-    const processedMatches = parsed.Matches.map(matchObj => {
+    const processedMatches = parsed.matches.map(matchObj => {
       const matchKey = Object.keys(matchObj)[0]
       const match = matchObj[matchKey]
 
-      for (const field of ['Left Team Logo', 'Right Team Logo', 'Left Team Flag', 'Right Team Flag']) {
+      for (const field of ['leftTeamLogo', 'rightTeamLogo', 'leftTeamFlag', 'rightTeamFlag']) {
         if (match[field] && match[field].startsWith('data:image')) {
           const ext = match[field].substring(
             match[field].indexOf('/') + 1,
@@ -260,7 +277,7 @@ ipcMain.handle('save-matches', async (_event, data) => {
 
     fs.writeFileSync(
       matchesFilePath,
-      JSON.stringify({ Info: parsed.Info, Matches: processedMatches }, null, 2),
+      JSON.stringify({ info: parsed.info, matches: processedMatches }, null, 2),
       'utf-8'
     )
 
@@ -351,6 +368,19 @@ ipcMain.handle('rename-preset', async (event, oldName, newName) => {
     return false;
   }
 });
+
+
+
+
+
+ipcMain.handle('select-folder', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  });
+  return result.canceled ? null : result.filePaths[0];
+});
+
+
 
 
 

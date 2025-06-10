@@ -6,224 +6,282 @@
     Players Stats
   </h1>
   <div class="flex justify-center py-10 px-4">
-    <div class="w-full grid gap-4">
-      <div v-for="(player, index) in players" :key="index" class="grid gap-7 p-4 -lg">
+    <div class="w-full grid gap-6">
+      <div v-for="(player, index) in players" :key="index" class="grid gap-6 p-4 -lg">
         <!-- Player Name -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="text"
-            v-model="player['Player Name']"
-            placeholder="Player Name"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.playerName"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Player Name</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="text"
+              v-model="player.playerName"
+              placeholder="Player Name"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
 
         <!-- Team Name -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="text"
-            v-model="player['Team Name']"
-            placeholder="Team Name"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.teamName"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Team Name</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="text"
+              v-model="player.teamName"
+              placeholder="Team Name"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
 
         <!-- Favorite Weapon -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="text"
-            v-model="player['Favourite Weapon']"
-            placeholder="Favorite Weapon"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.favouriteWeapon"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Favorite Weapon</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="text"
+              v-model="player.favouriteWeapon"
+              placeholder="Favorite Weapon"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
 
         <!-- Economy Score -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="number"
-            min="0"
-            v-model.number="player['Economy Score']"
-            placeholder="Economy Score"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.economyScore >= 0 && player.economyScore !== ''"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Economy Score</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
-        </div>
-        <!-- Hero Image -->
-        <div
-          class="flex justify-between border px-4 h-14 items-center gap-3"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <input
-            type="file"
-            class="hidden"
-            :ref="(el) => (heroRefs[index] = el)"
-            @change="handleFileChange($event, index, 'Hero Image')"
-          />
-          <span class="text-sm opacity-65">Hero Image</span>
-
-          <div v-if="player['Hero Image']" class="flex items-center gap-2">
-            <img
-              :src="player['Hero Image']"
-              alt="Hero"
-              class="w-12 h-12 object-cover cursor-pointer rounded"
-              @click="() => triggerFileInput(heroRefs, index)"
-              title="Click to change image"
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="number"
+              min="0"
+              v-model.number="player.economyScore"
+              placeholder="Economy Score"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
             />
+          </div>
+        </div>
+
+        <!-- Hero Image -->
+        <div class="grid gap-2">
+          <div
+            class="flex justify-between border px-4 h-14 items-center gap-3"
+            :class="
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
+            "
+          >
+            <input
+              type="file"
+              class="hidden"
+              :ref="(el) => (heroRefs[index] = el)"
+              @change="handleFileChange($event, index, 'heroImage')"
+            />
+            <span class="text-sm opacity-65">Hero Image</span>
+            <div v-if="player.heroImage" class="flex items-center gap-2">
+              <img
+                :src="player.heroImage"
+                alt="Hero"
+                class="w-12 h-12 object-cover cursor-pointer rounded"
+                @click="() => triggerFileInput(heroRefs, index)"
+                title="Click to change image"
+              />
+              <button
+                type="button"
+                class="text-red-500 font-semibold hover:underline"
+                @click="() => deleteHeroImage(index)"
+                title="Delete image"
+              >
+                Delete
+              </button>
+            </div>
             <button
-              type="button"
-              class="text-red-500 font-semibold hover:underline"
-              @click="() => deleteHeroImage(index)"
-              title="Delete image"
+              v-else
+              class="font-semibold cursor-pointer"
+              :class="props.displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
+              @click="() => triggerFileInput(heroRefs, index)"
             >
-              Delete
+              + ADD
             </button>
           </div>
-
-          <button
-            v-else
-            class="font-semibold cursor-pointer"
-            :class="props.displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
-            @click="() => triggerFileInput(heroRefs, index)"
-          >
-            + ADD
-          </button>
         </div>
 
         <!-- Kills -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="number"
-            min="0"
-            v-model.number="player.Kills"
-            placeholder="Kills"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.Kills >= 0 && player.Kills !== ''"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Kills</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="number"
+              min="0"
+              v-model.number="player.Kills"
+              placeholder="Kills"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
 
         <!-- Deaths -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="number"
-            min="0"
-            v-model.number="player.Deaths"
-            placeholder="Deaths"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.Deaths >= 0 && player.Deaths !== ''"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Deaths</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="number"
+              min="0"
+              v-model.number="player.Deaths"
+              placeholder="Deaths"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
 
         <!-- Assists -->
-        <div
-          class="px-4 py-3 border relative"
-          :class="
-            props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
-          "
-        >
-          <i
-            class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
-            :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
-          ></i>
-          <input
-            type="number"
-            min="0"
-            v-model.number="player.Assists"
-            placeholder="Assists"
-            class="outline-hidden pl-5 w-full"
+        <div class="grid gap-2">
+          <label
+            v-if="player.Assists >= 0 && player.Assists !== ''"
+            class="text-sm font-semibold"
+            :class="[props.displayMode === 'dark' ? 'text-white' : 'text-black']"
+            >Assists</label
+          >
+          <div
+            class="px-4 py-3 border relative"
             :class="
-              props.displayMode === 'dark'
-                ? 'placeholder-white text-white'
-                : 'placeholder-black text-black'
+              props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
-          />
+          >
+            <i
+              class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+              :class="props.displayMode === 'dark' ? 'text-white' : 'text-black'"
+            ></i>
+            <input
+              type="number"
+              min="0"
+              v-model.number="player.Assists"
+              placeholder="Assists"
+              class="outline-hidden pl-5 w-full bg-transparent"
+              :class="
+                props.displayMode === 'dark'
+                  ? 'placeholder-white text-white'
+                  : 'placeholder-black text-black'
+              "
+            />
+          </div>
         </div>
       </div>
     </div>
   </div>
+
   <div class="flex justify-center mt-3">
     <button
       @click="savePlayers"
@@ -246,14 +304,14 @@ const props = defineProps({
 
 const players = ref([
   {
-    'Player Name': '',
-    'Team Name': '',
-    'Favourite Weapon': '',
-    'Economy Score': 0,
-    'Hero Image': '',
-    Kills: 0,
-    Deaths: 0,
-    Assists: 0,
+    playerName: '',
+    teamName: '',
+    favouriteWeapon: '',
+    economyScore: "",
+    heroImage: '',
+    Kills: "",
+    Deaths: "",
+    Assists: "",
   },
 ])
 
@@ -284,10 +342,9 @@ function handleFileChange(event, index, type) {
   }
 }
 
-
 function deleteHeroImage(index) {
   try {
-    players.value[index]['Hero Image'] = ""
+    players.value[index].heroImage = ''
   } catch (err) {
     window.myAPI.logError(`Error deleting hero image: ${err.message}`)
   }
@@ -297,6 +354,7 @@ async function savePlayers() {
   try {
     const playersToSave = JSON.parse(JSON.stringify(players.value[0]))
     await window.myAPI.savePlayer(JSON.stringify(playersToSave))
+    alert('Players saved successfully!')
   } catch (err) {
     window.myAPI.logError(`Error saving players: ${err.message}`)
   }

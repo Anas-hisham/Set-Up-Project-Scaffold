@@ -23,6 +23,7 @@
       </p>
 
       <button
+        v-if="!updateAvailable"
         @click="checkForUpdate"
         class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
       >
@@ -124,7 +125,7 @@
           <input
             v-model="settings.savePath"
             type="text"
-            placeholder="/path/to/save"
+            :placeholder="folderPath.value ? folderPath.value : settings.savePath"
             class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
             :class="
               settings.displayMode === 'dark'
@@ -134,12 +135,20 @@
           />
         </div>
         <button
+          class="font-bold px-4 py-2"
+          :class="[settings.displayMode === 'dark' ? 'text-white' : 'text-black']"
+          @click="selectFolder"
+        >
+          Select Folder
+        </button>
+        <button
           @click="applySavePath"
           class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
         >
           Apply Path
         </button>
       </div>
+      <div></div>
     </div>
     <!-- Action Buttons -->
     <div class="flex flex-wrap justify-between gap-4 my-6">
@@ -181,10 +190,11 @@
           <label class="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
-              v-model="view.visible"
-              @change="updateViewVisibility(index)"
+              :checked="view.visible"
+              @change="updateViewVisibility(index, $event)"
               class="sr-only peer"
             />
+
             <div
               class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
               :class="
@@ -197,7 +207,13 @@
         </div>
       </div>
     </div>
-
+  <div
+  v-if="lastAppliedPreset"
+  class="text-sm mb-2"
+  :class="settings.displayMode === 'light' ? 'text-gray-600' : 'text-gray-300'"
+>
+  Currently applied preset: <span class="font-semibold">{{ lastAppliedPreset }}</span>
+</div>
     <!-- Manage Presets -->
     <div class="mt-8">
       <h3
@@ -228,73 +244,119 @@
           Save Current
         </button>
       </div>
-
       <div class="py-6 pb-2 space-y-4">
         <div
           v-for="(preset, index) in presetList"
           :key="index"
-          class="flex items-center justify-between border-b pb-4 last:border-none"
+          class="border-b pb-4 last:border-none"
           :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-200'"
         >
-          <div class="flex items-center gap-2">
-            <template v-if="editingName === preset.name">
-              <input
-                v-model="editedPresetName"
-                class="p-1 rounded border text-sm"
-                :class="
-                  settings.displayMode === 'dark'
-                    ? 'bg-gray-900 text-white border-gray-600'
-                    : 'bg-white text-gray-900 border-gray-300'
-                "
-              />
+          <!-- Preset name and action buttons -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <template v-if="editingName === preset.name">
+                <input
+                  v-model="editedPresetName"
+                  class="p-1 rounded border text-sm"
+                  :class="
+                    settings.displayMode === 'dark'
+                      ? 'bg-gray-900 text-white border-gray-600'
+                      : 'bg-white text-gray-900 border-gray-300'
+                  "
+                />
+                <button
+                  @click="confirmRename(preset.name)"
+                  class="text-sm text-green-600 font-semibold"
+                >
+                  ✔️
+                </button>
+                <button @click="cancelRename" class="text-sm text-red-600 font-semibold">❌</button>
+              </template>
+              <template v-else>
+                <button
+                  @click="applyPreset(preset.name)"
+                  class="px-3 py-1 rounded font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
+                >
+                  {{ preset.name }}
+                </button>
+              </template>
+            </div>
+
+            <!-- Control buttons including Save/Cancel if updating -->
+            <div class="flex gap-2">
               <button
-                @click="confirmRename(preset.name)"
-                class="text-sm text-green-600 font-semibold"
+                @click="startRenaming(preset.name)"
+                class="text-sm px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white shadow"
               >
-                ✔️
+                Edit
               </button>
-              <button @click="cancelRename" class="text-sm text-red-600 font-semibold">❌</button>
-            </template>
-            <template v-else>
+
+              <template v-if="updatingPreset === preset.name">
+                <button
+                  @click="confirmUpdatePreset(preset.name)"
+                  class="text-sm px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white shadow"
+                >
+                  Save
+                </button>
+                <button
+                  @click="cancelUpdatePreset"
+                  class="text-sm px-2 py-1 rounded bg-gray-500 hover:bg-gray-600 text-white shadow"
+                >
+                  Cancel
+                </button>
+              </template>
+              <template v-else>
+                <button
+                  @click="startUpdatingPreset(preset)"
+                  class="text-sm px-2 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white shadow"
+                >
+                  Update
+                </button>
+              </template>
+
               <button
-                @click="applyPreset(preset.name)"
-                class="px-3 py-1 rounded font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
+                @click="deletePreset(preset.name, index)"
+                class="text-sm px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white shadow"
               >
-                {{ preset.name }}
+                Delete
               </button>
-            </template>
+            </div>
           </div>
 
-          <div class="flex gap-2">
-            <button
-              @click="() => startRenaming(preset.name)"
-              class="text-sm px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white shadow"
-            >
-              Edit
-            </button>
-            <button
-              @click="updatePreset(preset.name)"
-              class="text-sm px-2 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white shadow"
-            >
-              Update
-            </button>
-            <button
-              @click="deletePreset(preset.name, index)"
-              class="text-sm px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white shadow"
-            >
-              Delete
-            </button>
+          <!-- Toggle switches shown only during update -->
+          <div
+            v-if="updatingPreset === preset.name"
+            class="mt-4 pl-2 space-y-2 border-l-2"
+            :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-300'"
+          >
+            <template v-for="(view, i) in tempUpdatedViews" :key="i">
+              <div v-if="view.title !== 'Settings'" class="flex items-center justify-between">
+                <span
+                  :class="[
+                    'font-medium',
+                    settings.displayMode === 'light' ? 'text-black' : 'text-white',
+                  ]"
+                >
+                  {{ view.title }}
+                </span>
+                <input
+                  type="checkbox"
+                  :checked="view.visible"
+                  class="w-5 h-5"
+                  @change="onToggleView(i, $event)"
+                />
+              </div>
+            </template>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-const router = useRouter()
+import { ref, onMounted, computed, watch } from 'vue'
 
 const { settings, allViews, setSettings, refreshView, resetSettings } = defineProps({
   settings: Object,
@@ -304,11 +366,76 @@ const { settings, allViews, setSettings, refreshView, resetSettings } = definePr
   resetSettings: Function,
 })
 
+const folderPath = ref('')
+
+const selectFolder = async () => {
+  const path = await window.myAPI.selectFolder()
+  if (path) {
+    folderPath.value = path
+    settings.savePath = path
+  }
+}
+
 const presets = ref({})
 const newPresetName = ref('')
 const editingName = ref(null)
 const editedPresetName = ref('')
 
+const updatingPreset = ref(null)
+const tempUpdatedViews = ref([])
+
+
+const lastAppliedPreset = ref(null)
+
+
+function startUpdatingPreset(preset) {
+  updatingPreset.value = preset.name
+  // Create a deep copy of the preset views
+  tempUpdatedViews.value = JSON.parse(JSON.stringify(preset.views))
+}
+
+// Update the confirmUpdatePreset function
+async function confirmUpdatePreset(name) {
+  if (!name.trim()) return
+
+  if (!tempUpdatedViews.value.length) {
+    alert('You must have at least one view selected.')
+    return
+  }
+
+  const confirmed = confirm(`Are you sure you want to update "${name}" with these view settings?`)
+  if (!confirmed) return
+
+  const success = await savePreset(name, tempUpdatedViews.value)
+
+  if (success) {
+    updatingPreset.value = null
+    tempUpdatedViews.value = []
+    alert(`Preset "${name}" updated successfully!`)
+  } else {
+    alert('Failed to update preset. Please try again.')
+  }
+}
+
+function cancelUpdatePreset() {
+  updatingPreset.value = null
+  tempUpdatedViews.value = []
+}
+
+function onToggleView(index, event) {
+  const newValue = event.target.checked
+  const viewTitle = tempUpdatedViews.value[index].title
+
+  const confirmed = confirm(
+    `Are you sure you want to ${newValue ? 'show' : 'hide'} "${viewTitle}" in this preset update?`,
+  )
+
+  if (confirmed) {
+    tempUpdatedViews.value[index].visible = newValue
+  } else {
+    event.target.checked = !newValue
+  }
+}
 // Convert presets object to array for consistent ordering
 const presetList = computed(() => {
   return Object.entries(presets.value).map(([name, views]) => ({ name, views }))
@@ -318,10 +445,37 @@ function withoutSettings() {
   return allViews.filter((view) => view.title !== 'Settings')
 }
 
-function updateViewVisibility() {
-  setSettings({ ...settings, views: [...allViews] })
-}
+function updateViewVisibility(index, event) {
+  const newValue = event.target.checked;
+  const view = allViews[index];
 
+  // First confirmation - about changing the view visibility
+  let confirmationMessage = `Are you sure you want to ${newValue ? 'show' : 'hide'} "${view.title}" view?`;
+
+  if (!confirm(confirmationMessage)) {
+    event.target.checked = !newValue;
+    return;
+  }
+
+  // If a preset is applied, ask if they want to update the preset as well
+  if (lastAppliedPreset.value) {
+    const updatePresetMessage = `You currently have the "${lastAppliedPreset.value}" preset applied.\n\nDo you also want to update this preset with your change?`;
+
+    if (confirm(updatePresetMessage)) {
+      // Update the preset with this change
+      const preset = presets.value[lastAppliedPreset.value];
+      const viewIndex = preset.findIndex(v => v.title === view.title);
+      if (viewIndex !== -1) {
+        preset[viewIndex].visible = newValue;
+        savePreset(lastAppliedPreset.value, preset);
+      }
+    }
+  }
+
+  // Apply the change to the view
+  view.visible = newValue;
+  setSettings({ ...settings, views: [...allViews] });
+}
 async function clearInput() {
   try {
     await window.myAPI.clearDataCache()
@@ -332,11 +486,17 @@ async function clearInput() {
 
 async function applySavePath() {
   try {
-    await window.myAPI.setCustomSavePath(settings.savePath)
+    const pathToApply = settings.savePath.trim()
+    await window.myAPI.setCustomSavePath(pathToApply)
   } catch (err) {
     window.myAPI.logError(`Error updating save path: ${err.message}`)
   }
 }
+watch(settings.savePath, async () => {
+  if (settings.savePath.trim() === '') {
+    await window.myAPI.setCustomSavePath(settings.savePath.trim())
+  }
+})
 
 async function loadPresets() {
   try {
@@ -346,17 +506,30 @@ async function loadPresets() {
   }
 }
 
-async function savePreset() {
-  if (!newPresetName.value.trim()) return
+async function savePreset(name, views) {
+  if (!name.trim()) return
+
   try {
-    await window.myAPI.savePreset(
-      newPresetName.value.trim(),
-      allViews.map((view) => ({ title: view.title, visible: view.visible })),
-    )
-    await loadPresets()
-    newPresetName.value = ''
+    const formattedViews = views.map((view) => ({
+      title: view.title,
+      visible: view.visible,
+    }))
+
+    // Save to disk/localStorage/backend
+    await window.myAPI.savePreset(name.trim(), formattedViews)
+
+    // Update local cache
+    presets.value[name] = [...formattedViews]
+
+    // If it was a "new" preset
+    if (newPresetName.value === name) {
+      newPresetName.value = ''
+    }
+
+    return true
   } catch (error) {
     window.myAPI.logError('Error saving preset:', error)
+    return false
   }
 }
 
@@ -382,6 +555,9 @@ async function deletePreset(name, index) {
 }
 
 function applyPreset(name) {
+  const confirmed = window.confirm(`Are you sure you want to apply the "${name}" preset?`)
+  if (!confirmed) return
+
   const preset = presets.value[name]
   if (preset) {
     const fullViews = allViews.map((view) => {
@@ -389,8 +565,10 @@ function applyPreset(name) {
       return presetView ? { ...view, visible: presetView.visible } : { ...view, visible: false }
     })
     setSettings({ ...settings, views: fullViews })
+    lastAppliedPreset.value = name // Track the last applied preset
   }
 }
+
 
 function startRenaming(name) {
   editingName.value = name
@@ -423,6 +601,11 @@ const showUpdateUI = ref(false)
 
 onMounted(async () => {
   await loadPresets()
+
+  if (window.myAPI?.getDefaultSavePath) {
+    settings.savePath = await window.myAPI.getDefaultSavePath()
+  }
+
   appVersion.value = await window.myAPI.getAppVersion()
 
   // Check for updates automatically in background

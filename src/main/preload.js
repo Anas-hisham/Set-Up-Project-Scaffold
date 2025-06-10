@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('myAPI', {
 
   loadPlayerCache: () => ipcRenderer.invoke('load-player-cache'),
   savePlayerCache: (data) => ipcRenderer.invoke('save-player-cache', data),
+
+
   savePlayer: (data) => ipcRenderer.invoke('save-player', data),
 
   loadMatchesCache: () => ipcRenderer.invoke('load-matches-cache'),
@@ -42,6 +44,19 @@ contextBridge.exposeInMainWorld('myAPI', {
   onUpdateDownloaded: (callback) => ipcRenderer.on('update_downloaded', callback),
 
   onDownloadProgress: (callback) => ipcRenderer.on('update-download-progress', (event, percent) => callback(percent))
+
+  ,
+getDefaultSavePath: () => ipcRenderer.invoke('get-default-save-path')
+
+
+
+,
+  selectFolder: () => ipcRenderer.invoke('select-folder')
+
+
+
+
+
 
 
 })

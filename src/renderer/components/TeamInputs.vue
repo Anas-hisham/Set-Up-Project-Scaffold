@@ -11,14 +11,14 @@
         type="file"
         class="hidden"
         :ref="(el) => (imageRefs[index] = el)"
-        @change="handleFileChange($event, index, 'Team Image')"
+        @change="handleFileChange($event, index, 'teamImage')"
         accept="image/*"
       />
       <span class="text-sm">Team Image</span>
 
-      <div v-if="team['Team Image']" class="flex items-center gap-2">
+      <div v-if="team.teamImage" class="flex items-center gap-2">
         <img
-          :src="team['Team Image']"
+          :src="team.teamImage"
           alt="Team"
           class="w-12 h-12 object-cover cursor-pointer"
           @click="() => triggerFileInput(imageRefs, index)"
@@ -26,7 +26,7 @@
         <button
           @click="
             () => {
-              team['Team Image'] = ''
+              team.teamImage = ''
             }
           "
           class="text-red-500 hover:text-red-700 font-semibold"
@@ -58,14 +58,14 @@
         type="file"
         class="hidden"
         :ref="(el) => (flagRefs[index] = el)"
-        @change="handleFileChange($event, index, 'Team Flag')"
+        @change="handleFileChange($event, index, 'teamFlag')"
         accept="image/*"
       />
       <span class="text-sm">Team Flag</span>
 
-      <div v-if="team['Team Flag']" class="flex items-center gap-2">
+      <div v-if="team.teamFlag" class="flex items-center gap-2">
         <img
-          :src="team['Team Flag']"
+          :src="team.teamFlag"
           alt="Flag"
           class="w-12 h-12 object-cover cursor-pointer"
           @click="() => triggerFileInput(flagRefs, index)"
@@ -73,7 +73,7 @@
         <button
           @click="
             () => {
-              team['Team Flag'] = ''
+              team.teamFlag = ''
             }
           "
           class="text-red-500 hover:text-red-700 font-semibold"
@@ -93,47 +93,63 @@
         ADD +
       </button>
     </div>
-
-    <!-- Team Name -->
-    <div
-      class="px-4 py-3 border relative"
-      :class="displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'"
-    >
-      <i
-        class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+    <!-- TEAM NAME -->
+    <div class="col-span-1 relative mt-7 md:mt-0" >
+      <label
+        class=" w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
         :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-      ></i>
-      <input
-        type="text"
-        v-model="team['Team Name']"
-        maxlength="13"
-        placeholder="Team Name"
-        class="outline-hidden pl-5 w-full"
-        :class="
-          displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
-        "
-      />
+      >
+        Team Name
+      </label>
+      <div
+        class="relative px-4 py-3 border"
+        :class="displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'"
+      >
+        <i
+          class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+        ></i>
+        <input
+          type="text"
+          v-model="team.teamName"
+          maxlength="13"
+          placeholder="Team Name"
+          class="outline-none pl-5 w-full bg-transparent"
+          :class="
+            displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
+          "
+        />
+      </div>
     </div>
 
     <!-- Team Score -->
-    <div
-      class="px-4 py-3 border relative"
-      :class="displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'"
-    >
-      <i
-        class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"
+    <!-- TEAM SCORE -->
+    <div class="col-span-1 relative mt-7 md:mt-0">
+      <label
+        class=" w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
         :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-      ></i>
-      <input
-        type="number"
-        min="0"
-        v-model.number="team['Team Score']"
-        placeholder="Team Score"
-        class="outline-hidden pl-5 w-full"
-        :class="
-          displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
-        "
-      />
+      >
+        Team Score
+      </label>
+      <div
+        class="relative px-4 py-3 border"
+        :class="displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'"
+      >
+        <i
+          class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+        ></i>
+        <input
+          type="number"
+          min="0"
+          v-model.number="team.teamScore"
+          placeholder="Team Score"
+          class="outline-none pl-5 w-full bg-transparent"
+          :class="
+            displayMode === 'dark' ? 'placeholder-white text-white' : 'placeholder-black text-black'
+          "
+        />
+      </div>
     </div>
   </div>
 </template>

@@ -2,11 +2,11 @@
 <template>
   <nav
     :class="[
-      'side-nav transition-all duration-300 flex flex-col border-r',
+      'side-nav transition-all duration-300 flex flex-col border-r relative items-center',
       displayMode === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200',
     ]"
   >
-    <div class="flex justify-center items-center h-[calc(100vh-60px)]">
+    <div class="flex justify-center items-center h-[calc(100vh-60px)] fixed">
       <ul class="space-y-2 p-2 w-fit">
         <li v-for="view in views" :key="view.path">
           <router-link

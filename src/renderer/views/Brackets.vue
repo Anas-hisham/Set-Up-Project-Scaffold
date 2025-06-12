@@ -30,10 +30,39 @@
       Save Teams
     </button>
   </div>
+    <div
+    v-if="alert.showAlert"
+    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    @click.self="closeAlert"
+  >
+    <div
+      class="relative p-6 rounded-xl shadow-lg w-80 text-center"
+      :class="[
+        props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
+      ]"
+    >
+      <!-- Close Button -->
+      <button
+        @click="closeAlert"
+        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
+      >
+        ×
+      </button>
+
+      <p class="mb-4">{{ alert.text }}</p>
+
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        @click="closeAlert"
+      >
+        OK
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, reactive } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
 
 const props = defineProps({ displayMode: String })
@@ -42,6 +71,27 @@ const isDarkMode = computed(() => props.displayMode === 'dark')
 const teams = ref([])
 const imageRefs = ref([])
 const flagRefs = ref([])
+
+
+
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
+
+function showAlert(text) {
+  alert.text = text
+  alert.showAlert = true
+}
+
+function closeAlert() {
+  alert.showAlert = false
+}
+
+
+
+
+
 
 // ----- Factory -----
 const createEmptyTeam = () => ({
@@ -76,7 +126,7 @@ const triggerFileInput = (refsArray, index) => {
 const saveTeamsToDisk = async () => {
   try {
     await window.myAPI.saveTeams(JSON.stringify(teams.value))
-    alert('Teams saved successfully!')
+    showAlert('Teams saved successfully!')
   } catch (err) {
     logError('Error saving teams', err)
   }

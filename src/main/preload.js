@@ -13,13 +13,19 @@ contextBridge.exposeInMainWorld('myAPI', {
 
   savePlayer: (data) => ipcRenderer.invoke('save-player', data),
 
+
   loadMatchesCache: () => ipcRenderer.invoke('load-matches-cache'),
   saveMatchesCache: (data) => ipcRenderer.invoke('save-matches-cache', data),
   saveMatches: (data) => ipcRenderer.invoke('save-matches', data),
 
+
+ setLastAppliedPreset: (name) => ipcRenderer.invoke('set-last-preset', name),
+  getLastAppliedPreset: () => ipcRenderer.invoke('get-last-preset'),
   saveViewSettingsCache: (data) => ipcRenderer.invoke('save-settings-cache', data),
   getViewSettingsCache: () => ipcRenderer.invoke('get-settings-cache'),
   clearDataCache: () => ipcRenderer.invoke('clear-data-cache'),
+
+
 
 
   setCustomSavePath: (customPath) => ipcRenderer.invoke('set-custom-save-path', customPath),
@@ -51,13 +57,15 @@ getDefaultSavePath: () => ipcRenderer.invoke('get-default-save-path')
 
 
 ,
-  selectFolder: () => ipcRenderer.invoke('select-folder')
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
 
 
 
 
 
-
+  openFileDialog: (options) => ipcRenderer.invoke('dialog:openFile', options),
+  readFile: (path) => ipcRenderer.invoke('file:read', path),
+  showErrorDialog: (message) => ipcRenderer.send('dialog:error', message)
 
 })
 

@@ -290,10 +290,41 @@
       Save Players
     </button>
   </div>
+
+  <div
+    v-if="alert.showAlert"
+    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    @click.self="closeAlert"
+  >
+    <div
+      class="relative p-6 rounded-xl shadow-lg w-80 text-center"
+      :class="[
+        props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
+      ]"
+    >
+      <!-- Close Button -->
+      <button
+        @click="closeAlert"
+        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
+      >
+        ×
+      </button>
+
+      <p class="mb-4">{{ alert.text }}</p>
+
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        @click="closeAlert"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, reactive } from 'vue'
 
 const props = defineProps({
   displayMode: {
@@ -307,13 +338,27 @@ const players = ref([
     playerName: '',
     teamName: '',
     favouriteWeapon: '',
-    economyScore: "",
+    economyScore: '',
     heroImage: '',
-    Kills: "",
-    Deaths: "",
-    Assists: "",
+    Kills: '',
+    Deaths: '',
+    Assists: '',
   },
 ])
+
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
+
+function showAlert(text) {
+  alert.text = text
+  alert.showAlert = true
+}
+
+function closeAlert() {
+  alert.showAlert = false
+}
 
 const heroRefs = ref([])
 
@@ -354,7 +399,7 @@ async function savePlayers() {
   try {
     const playersToSave = JSON.parse(JSON.stringify(players.value[0]))
     await window.myAPI.savePlayer(JSON.stringify(playersToSave))
-    alert('Players saved successfully!')
+    showAlert('Players saved successfully!')
   } catch (err) {
     window.myAPI.logError(`Error saving players: ${err.message}`)
   }

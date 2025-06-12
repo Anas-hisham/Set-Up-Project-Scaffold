@@ -4,11 +4,17 @@ import BracketView from '../views/Brackets.vue'
 import PlayersStatsView from '../views/PlayersStats.vue'
 import TodaysMatchesView from '../views/TodaysMatches.vue'
 import SettingsView from '../views/Settings.vue'
+import WelcomeView from '../views/Welcome.vue' // Import the new Welcome component
 
 const routes = [
   {
     path: '/',
-    redirect: '/brackets'
+    redirect: '/welcome' // Changed from '/brackets' to '/welcome'
+  },
+  {
+    path: '/welcome',
+    component: WelcomeView,
+    meta: { title: 'Welcome' }
   },
   {
     path: '/brackets',

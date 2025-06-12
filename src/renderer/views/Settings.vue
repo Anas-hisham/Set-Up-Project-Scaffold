@@ -207,13 +207,13 @@
         </div>
       </div>
     </div>
-  <div
-  v-if="lastAppliedPreset"
-  class="text-sm mb-2"
-  :class="settings.displayMode === 'light' ? 'text-gray-600' : 'text-gray-300'"
->
-  Currently applied preset: <span class="font-semibold">{{ lastAppliedPreset }}</span>
-</div>
+    <div
+      v-if="lastAppliedPreset"
+      class="text-sm mb-2"
+      :class="settings.displayMode === 'light' ? 'text-gray-600' : 'text-gray-300'"
+    >
+      Currently applied preset: <span class="font-semibold">{{ lastAppliedPreset }}</span>
+    </div>
     <!-- Manage Presets -->
     <div class="mt-8">
       <h3
@@ -238,7 +238,7 @@
           "
         />
         <button
-          @click="savePreset"
+          @click="handleSavePreset"
           class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
         >
           Save Current
@@ -274,7 +274,7 @@
               </template>
               <template v-else>
                 <button
-                  @click="applyPreset(preset.name)"
+                  @click="applyCurrentPreset(preset.name)"
                   class="px-3 py-1 rounded font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
                 >
                   {{ preset.name }}
@@ -350,21 +350,151 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
+
+  <div
+    v-if="alert.showAlert"
+    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    @click.self="closeAlert"
+  >
+    <div
+      class="relative p-6 rounded-xl shadow-lg w-100 text-center"
+      :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
+    >
+      <!-- Close Button -->
+      <button
+        @click="closeAlert"
+        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
+      >
+        ×
+      </button>
+
+      <p class="mb-4">{{ alert.text }}</p>
+
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        @click="closeAlert"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+
+  <div
+    v-if="confirmDialog.show"
+    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    @click.self="handleCancel()"
+  >
+    <div
+      class="relative p-6 rounded-xl shadow-lg w-100 text-center"
+      :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
+    >
+      <button
+        @click="handleCancel()"
+        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
+      >
+        ×
+      </button>
+
+      <p class="mb-4">{{ confirmDialog.message }}</p>
+
+      <div class="flex justify-around gap-2">
+        <button
+          class="flex-1 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+          @click="handleConfirm(false)"
+        >
+          Create New Presist
+        </button>
+        <button
+          class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          @click="handleConfirm(true)"
+        >
+          Update
+        </button>
+      </div>
+    </div>
+  </div>
+
+
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, reactive } from 'vue'
 
-const { settings, allViews, setSettings, refreshView, resetSettings } = defineProps({
+const { settings, allViews, setSettings, resetSettings, displayMode } = defineProps({
   settings: Object,
   allViews: Array,
   setSettings: Function,
-  refreshView: Function,
   resetSettings: Function,
+  displayMode: String,
 })
+
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
+
+function showAlert(text) {
+  alert.text = text
+  alert.showAlert = true
+}
+
+function closeAlert() {
+  alert.showAlert = false
+}
+
+const confirmDialog = reactive({
+  show: false,
+  message: '',
+  resolve: null,
+})
+
+function showConfirm(message) {
+  confirmDialog.message = message
+  confirmDialog.show = true
+  return new Promise((resolve) => {
+    confirmDialog.resolve = resolve
+  })
+}
+function handleCancel() {
+  confirmDialog.show = false
+}
+
+function handleConfirm(result) {
+  confirmDialog.show = false
+  if (confirmDialog.resolve) {
+    // null means cancelled, true means create new, false means overwrite
+    confirmDialog.resolve(result !== null ? result : false)
+  }
+}
+
+async function handleSavePreset() {
+  // If we have a last applied preset, show the overwrite dialog
+  if (lastAppliedPreset.value) {
+    const shouldOverwrite = await showConfirm(
+      `Update "${lastAppliedPreset.value}" with current visibility?`,
+    )
+
+    if (shouldOverwrite) {
+      await savePreset(lastAppliedPreset.value, allViews)
+      showAlert(`Preset "${lastAppliedPreset.value}" updated!`)
+      return
+    }
+  }
+
+  // Otherwise (or if user chooses not to overwrite), require a new name
+  if (!newPresetName.value.trim()) {
+    showAlert('Please enter a name for the new preset')
+    return
+  }
+
+ const presetName = newPresetName.value.trim()
+  await savePreset(presetName, allViews)
+  await applyPreset(presetName)
+  showAlert(`New preset "${presetName}" created!`)
+  newPresetName.value = ''
+}
 
 const folderPath = ref('')
 
@@ -384,9 +514,7 @@ const editedPresetName = ref('')
 const updatingPreset = ref(null)
 const tempUpdatedViews = ref([])
 
-
 const lastAppliedPreset = ref(null)
-
 
 function startUpdatingPreset(preset) {
   updatingPreset.value = preset.name
@@ -396,25 +524,51 @@ function startUpdatingPreset(preset) {
 
 // Update the confirmUpdatePreset function
 async function confirmUpdatePreset(name) {
-  if (!name.trim()) return
+  if (!name.trim()) return;
 
   if (!tempUpdatedViews.value.length) {
-    alert('You must have at least one view selected.')
-    return
+    return;
   }
 
-  const confirmed = confirm(`Are you sure you want to update "${name}" with these view settings?`)
-  if (!confirmed) return
+  try {
+    // Save the updated preset (only updates the preset definition)
+    await savePreset(name, tempUpdatedViews.value);
 
-  const success = await savePreset(name, tempUpdatedViews.value)
+    updatingPreset.value = null;
+    tempUpdatedViews.value = [];
 
-  if (success) {
-    updatingPreset.value = null
-    tempUpdatedViews.value = []
-    alert(`Preset "${name}" updated successfully!`)
-  } else {
-    alert('Failed to update preset. Please try again.')
+    showAlert(`Preset "${name}" saved successfully!`);
+
+    // Reload presets to reflect changes
+    await loadPresets();
+
+    // Only apply the preset if it's the currently applied one
+    if (lastAppliedPreset.value === name) {
+      await applyCurrentPreset(name);
+    }
+
+  } catch (error) {
+    console.error('Error saving preset:', error);
+    showAlert('Failed to save preset');
   }
+}
+
+async function applyCurrentPreset(presetName) {
+  const preset = presets.value[presetName];
+  if (!preset) return;
+
+  // Update last applied preset reference
+  lastAppliedPreset.value = presetName;
+  await window.myAPI.setLastAppliedPreset(presetName);
+
+  // Apply the preset views
+  const fullViews = allViews.map((view) => {
+    const presetView = preset.find((v) => v.title === view.title);
+    return presetView ? { ...view, visible: presetView.visible } : view;
+  });
+
+  setSettings({ ...settings, views: fullViews });
+  showAlert(`Preset "${presetName}" applied!`);
 }
 
 function cancelUpdatePreset() {
@@ -422,20 +576,11 @@ function cancelUpdatePreset() {
   tempUpdatedViews.value = []
 }
 
-function onToggleView(index, event) {
+async function onToggleView(index, event) {
   const newValue = event.target.checked
-  const viewTitle = tempUpdatedViews.value[index].title
-
-  const confirmed = confirm(
-    `Are you sure you want to ${newValue ? 'show' : 'hide'} "${viewTitle}" in this preset update?`,
-  )
-
-  if (confirmed) {
-    tempUpdatedViews.value[index].visible = newValue
-  } else {
-    event.target.checked = !newValue
-  }
+  tempUpdatedViews.value[index].visible = newValue
 }
+
 // Convert presets object to array for consistent ordering
 const presetList = computed(() => {
   return Object.entries(presets.value).map(([name, views]) => ({ name, views }))
@@ -445,37 +590,13 @@ function withoutSettings() {
   return allViews.filter((view) => view.title !== 'Settings')
 }
 
-function updateViewVisibility(index, event) {
-  const newValue = event.target.checked;
-  const view = allViews[index];
-
-  // First confirmation - about changing the view visibility
-  let confirmationMessage = `Are you sure you want to ${newValue ? 'show' : 'hide'} "${view.title}" view?`;
-
-  if (!confirm(confirmationMessage)) {
-    event.target.checked = !newValue;
-    return;
-  }
-
-  // If a preset is applied, ask if they want to update the preset as well
-  if (lastAppliedPreset.value) {
-    const updatePresetMessage = `You currently have the "${lastAppliedPreset.value}" preset applied.\n\nDo you also want to update this preset with your change?`;
-
-    if (confirm(updatePresetMessage)) {
-      // Update the preset with this change
-      const preset = presets.value[lastAppliedPreset.value];
-      const viewIndex = preset.findIndex(v => v.title === view.title);
-      if (viewIndex !== -1) {
-        preset[viewIndex].visible = newValue;
-        savePreset(lastAppliedPreset.value, preset);
-      }
-    }
-  }
-
-  // Apply the change to the view
-  view.visible = newValue;
-  setSettings({ ...settings, views: [...allViews] });
+async function updateViewVisibility(index, event) {
+  const newValue = event.target.checked
+  const view = allViews[index]
+  view.visible = newValue
+  setSettings({ ...settings, views: [...allViews] })
 }
+
 async function clearInput() {
   try {
     await window.myAPI.clearDataCache()
@@ -492,20 +613,28 @@ async function applySavePath() {
     window.myAPI.logError(`Error updating save path: ${err.message}`)
   }
 }
-watch(settings.savePath, async () => {
-  if (settings.savePath.trim() === '') {
-    await window.myAPI.setCustomSavePath(settings.savePath.trim())
-  }
-})
+watch(
+  () => settings.savePath,
+  async () => {
+    if (settings.savePath.trim() === '') {
+      await window.myAPI.setCustomSavePath(settings.savePath.trim())
+    }
+  },
+)
 
 async function loadPresets() {
   try {
-    presets.value = (await window.myAPI.getPresets()) || {}
+    presets.value = (await window.myAPI.getPresets()) || {};
+
+    // Check if last applied preset still exists
+    if (lastAppliedPreset.value && !presets.value[lastAppliedPreset.value]) {
+      lastAppliedPreset.value = null;
+      await window.myAPI.setLastAppliedPreset('');
+    }
   } catch (error) {
-    window.myAPI.logError('Error loading presets:', error)
+    window.myAPI.logError('Error loading presets:', error);
   }
 }
-
 async function savePreset(name, views) {
   if (!name.trim()) return
 
@@ -515,7 +644,6 @@ async function savePreset(name, views) {
       visible: view.visible,
     }))
 
-    // Save to disk/localStorage/backend
     await window.myAPI.savePreset(name.trim(), formattedViews)
 
     // Update local cache
@@ -533,18 +661,6 @@ async function savePreset(name, views) {
   }
 }
 
-async function updatePreset(name) {
-  try {
-    await window.myAPI.savePreset(
-      name,
-      allViews.map((view) => ({ title: view.title, visible: view.visible })),
-    )
-    await loadPresets()
-  } catch (error) {
-    window.myAPI.logError('Error updating preset:', error)
-  }
-}
-
 async function deletePreset(name, index) {
   try {
     await window.myAPI.deletePreset(name)
@@ -553,22 +669,25 @@ async function deletePreset(name, index) {
     window.myAPI.logError('Error deleting preset:', error)
   }
 }
+async function applyPreset(name) {
+  try {
+    const preset = presets.value[name];
+    if (!preset) {
+      showAlert('Preset not found');
+      return;
+    }
 
-function applyPreset(name) {
-  const confirmed = window.confirm(`Are you sure you want to apply the "${name}" preset?`)
-  if (!confirmed) return
+    // Update last applied preset reference
+    lastAppliedPreset.value = name;
+    await window.myAPI.setLastAppliedPreset(name);
 
-  const preset = presets.value[name]
-  if (preset) {
-    const fullViews = allViews.map((view) => {
-      const presetView = preset.find((v) => v.title === view.title)
-      return presetView ? { ...view, visible: presetView.visible } : { ...view, visible: false }
-    })
-    setSettings({ ...settings, views: fullViews })
-    lastAppliedPreset.value = name // Track the last applied preset
+    // Don't apply the preset views immediately here
+    // We'll handle the application when user confirms
+  } catch (error) {
+    console.error('Error applying preset:', error);
+    showAlert('Failed to apply preset. Check console for details.');
   }
 }
-
 
 function startRenaming(name) {
   editingName.value = name
@@ -583,8 +702,16 @@ function cancelRename() {
 async function confirmRename(oldName) {
   const newName = editedPresetName.value.trim()
   if (!newName) return
+
   try {
     await window.myAPI.renamePreset(oldName, newName)
+
+    // Update lastAppliedPreset if the renamed preset was the current one
+    if (lastAppliedPreset.value === oldName) {
+      lastAppliedPreset.value = newName
+      await window.myAPI.setLastAppliedPreset(newName)
+    }
+
     await loadPresets()
     cancelRename()
   } catch (error) {
@@ -601,6 +728,17 @@ const showUpdateUI = ref(false)
 
 onMounted(async () => {
   await loadPresets()
+  try {
+    const lastPreset = await window.myAPI.getLastAppliedPreset()
+    lastAppliedPreset.value = lastPreset || ''
+
+    if (lastAppliedPreset.value && presets.value[lastAppliedPreset.value]) {
+      await applyPreset(lastAppliedPreset.value)
+    }
+  } catch (error) {
+    console.error('Error loading last preset:', error)
+    lastAppliedPreset.value = ''
+  }
 
   if (window.myAPI?.getDefaultSavePath) {
     settings.savePath = await window.myAPI.getDefaultSavePath()

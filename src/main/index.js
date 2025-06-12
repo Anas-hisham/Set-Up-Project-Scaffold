@@ -92,7 +92,7 @@ let teamsImageFolder
 
 function ensureFoldersExist(basePath) {
   jsonFolderPath = path.join(basePath, 'jsons')
-   const imagesFolder = path.join(basePath, 'images')
+  const imagesFolder = path.join(basePath, 'images')
   playerImageFolder = path.join(imagesFolder, 'players-images')
   matchImageFolder = path.join(imagesFolder, 'matches-images')
   teamsImageFolder = path.join(imagesFolder, 'brackets-images')
@@ -119,6 +119,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
+    autoHideMenuBar: true,
+
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -299,6 +301,16 @@ ipcMain.handle('save-settings-cache', async (_event, data) => {
   }
 })
 
+
+ipcMain.handle('set-last-preset', (_, name) => {
+  store.set('lastAppliedPreset', name)
+  return true
+})
+
+ipcMain.handle('get-last-preset', () => {
+  return store.get('lastAppliedPreset', '') // '' is the default if key doesn't exist
+})
+
 ipcMain.handle('get-settings-cache', async () => store.get('settingsCache'))
 
 ipcMain.handle('clear-data-cache', async () => {
@@ -384,6 +396,21 @@ ipcMain.handle('select-folder', async () => {
 
 
 
+ipcMain.handle('dialog:openFile', async (_, options) => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: options.filters
+  });
+  return result;
+});
+
+ipcMain.handle('file:read', async (_, path) => {
+  return fs.promises.readFile(path);
+});
+
+ipcMain.on('dialog:error', (_, message) => {
+  dialog.showErrorBox('Error', message);
+});
 
 
 

@@ -43,7 +43,7 @@
           class="font-semibold uppercase text-sm w-full py-4 text-start px-5"
           :class="displayMode === 'dark' ? 'text-white bg-[#22292f]' : 'text-black bg-gray-200'"
         >
-          {{ matchIndex === 0 ? 'first Match' : 'secondMatch' }}
+          {{ matchIndex === 0 ? 'first Match' : 'second Match' }}
         </h2>
 
         <div
@@ -277,10 +277,37 @@
       </button>
     </div>
   </div>
+
+  <div
+    v-if="alert.showAlert"
+    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+    @click.self="closeAlert"
+  >
+    <div
+      class="relative p-6 rounded-xl shadow-lg w-80 text-center"
+      :class="[displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
+    >
+      <!-- Close Button -->
+      <button
+        @click="closeAlert"
+        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
+      >
+        ×
+      </button>
+      <p class="mb-4">{{ alert.text }}</p>
+
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        @click="closeAlert"
+      >
+        OK
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, reactive } from 'vue'
 
 defineProps({
   displayMode: {
@@ -288,6 +315,20 @@ defineProps({
     default: 'dark',
   },
 })
+
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
+
+function showAlert(text) {
+  alert.text = text
+  alert.showAlert = true
+}
+
+function closeAlert() {
+  alert.showAlert = false
+}
 
 const matchInfo = ref({
   date: '',
@@ -356,7 +397,7 @@ async function saveMatches() {
       matches: matches.value,
     }
     await window.myAPI.saveMatches(JSON.stringify(dataToSave))
-    alert('Matches saved successfully!')
+    showAlert('Matches saved successfully!')
   } catch (err) {
     console.error('Error saving Matches:', err)
     window.myAPI.logError(`Error saving Matches: ${err.message}`)

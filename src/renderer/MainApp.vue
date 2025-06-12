@@ -18,7 +18,7 @@
             ? 'col-span-4 md:col-span-3 lg:col-span-2'
             : 'col-span-1 lg:col-span-1',
         ]"
-        :views="visibleViews.filter((view) => view.path !== '/settings')"
+        :views="visibleViews"
         :navMode="settings.navMode"
         :displayMode="settings.displayMode"
       />
@@ -32,6 +32,7 @@
           settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black',
         ]"
       >
+        <Welcome v-if="route.path === '/welcome'" :displayMode="settings.displayMode" />
         <Brackets v-if="route.path === '/brackets'" :displayMode="settings.displayMode" />
         <PlayersStats v-else-if="route.path === '/players'" :displayMode="settings.displayMode" />
         <TodayxMatches v-else-if="route.path === '/matches'" :displayMode="settings.displayMode" />
@@ -53,7 +54,10 @@
       @click.self="cancelUpdate"
     >
       <div
-        class="relative bg-white dark:bg-gray-800 text-black dark:text-white p-6 rounded-xl shadow-lg w-96 text-center"
+        class="relative p-6 rounded-xl shadow-lg w-96 text-center"
+        :class="
+          settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black'
+        "
       >
         <!-- Close Button -->
         <button
@@ -98,6 +102,7 @@ import Brackets from './views/Brackets.vue'
 import PlayersStats from './views/PlayersStats.vue'
 import TodayxMatches from './views/TodaysMatches.vue'
 import Settings from './views/Settings.vue'
+import Welcome from './views/Welcome.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -106,8 +111,9 @@ const defaultSettings = {
   displayMode: 'dark',
   navMode: 'full',
   savePath: '',
-  lastView: '/brackets',
+  lastView: '/welcome', // Set welcome as default view
   views: [
+    { title: 'Home', path: '/welcome', visible: true },
     { title: 'Brackets View', path: '/brackets', visible: true },
     { title: 'Players Stats', path: '/players', visible: true },
     { title: "Today's Matches", path: '/matches', visible: true },
@@ -223,7 +229,7 @@ function setSettings(newSettings) {
 }
 
 async function resetSettings() {
-  await window.myAPI.setCustomSavePath('') 
+  await window.myAPI.setCustomSavePath('')
   const path = await window.myAPI.getDefaultSavePath()
 
   settings.value = {

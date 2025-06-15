@@ -7,43 +7,30 @@
         displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'
       "
     >
-      <input
-        type="file"
-        class="hidden"
-        :ref="(el) => (imageRefs[index] = el)"
-        @change="handleFileChange($event, index, 'teamImage')"
-        accept="image/*"
-      />
       <span class="text-sm">Team Image</span>
-
-      <div v-if="team.teamImage" class="flex items-center gap-2">
+      <div v-if="teamImages[index]" class="flex items-center gap-2">
         <img
-          :src="team.teamImage"
+          :src="teamImages[index]"
           alt="Team"
           class="w-12 h-12 object-cover cursor-pointer"
-          @click="() => triggerFileInput(imageRefs, index)"
+          @click="openTeamImageOrFlagDialog(index, 'image')"
         />
         <button
-          @click="
-            () => {
-              team.teamImage = ''
-            }
-          "
-          class="text-red-500 hover:text-red-700 font-semibold"
           type="button"
+          class="text-red-500 font-semibold hover:underline"
+          @click="removeTeamImageOrFlag(index, 'image')"
+          title="Delete image"
         >
           Delete
         </button>
       </div>
-
       <button
         v-else
         class="font-semibold cursor-pointer"
         :class="displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
-        @click="() => triggerFileInput(imageRefs, index)"
-        type="button"
+        @click="openTeamImageOrFlagDialog(index, 'image')"
       >
-        ADD +
+        + ADD
       </button>
     </div>
 
@@ -54,49 +41,38 @@
         displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'
       "
     >
-      <input
-        type="file"
-        class="hidden"
-        :ref="(el) => (flagRefs[index] = el)"
-        @change="handleFileChange($event, index, 'teamFlag')"
-        accept="image/*"
-      />
       <span class="text-sm">Team Flag</span>
-
-      <div v-if="team.teamFlag" class="flex items-center gap-2">
+      <div v-if="teamFlags[index]" class="flex items-center gap-2">
         <img
-          :src="team.teamFlag"
+          :src="teamFlags[index]"
           alt="Flag"
           class="w-12 h-12 object-cover cursor-pointer"
-          @click="() => triggerFileInput(flagRefs, index)"
+          @click="openTeamImageOrFlagDialog(index, 'flag')"
+          title="Click to change flag"
         />
         <button
-          @click="
-            () => {
-              team.teamFlag = ''
-            }
-          "
-          class="text-red-500 hover:text-red-700 font-semibold"
           type="button"
+          class="text-red-500 font-semibold hover:underline"
+          @click="removeTeamImageOrFlag(index, 'flag')"
+          title="Delete flag"
         >
           Delete
         </button>
       </div>
-
       <button
         v-else
         class="font-semibold cursor-pointer"
         :class="displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
-        @click="() => triggerFileInput(flagRefs, index)"
-        type="button"
+        @click="openTeamImageOrFlagDialog(index, 'flag')"
       >
-        ADD +
+        + ADD
       </button>
     </div>
-    <!-- TEAM NAME -->
-    <div class="col-span-1 relative mt-7 md:mt-0" >
+
+    <!-- Team Name -->
+    <div class="col-span-1 relative mt-7 md:mt-0">
       <label
-        class=" w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
+        class="w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
         :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
       >
         Team Name
@@ -123,10 +99,9 @@
     </div>
 
     <!-- Team Score -->
-    <!-- TEAM SCORE -->
     <div class="col-span-1 relative mt-7 md:mt-0">
       <label
-        class=" w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
+        class="w-max absolute left-1/2 -top-7 -translate-x-1/2 block mb-1 text-sm font-semibold"
         :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
       >
         Team Score
@@ -158,10 +133,11 @@
 defineProps({
   team: Object,
   index: Number,
-  imageRefs: Array,
-  flagRefs: Array,
-  handleFileChange: Function,
-  triggerFileInput: Function,
+  teamImages: Array,
+  teamFlags: Array,
+  openTeamImageOrFlagDialog: Function,
+  removeTeamImageOrFlag: Function,
+
   displayMode: {
     type: String,
     default: 'light',

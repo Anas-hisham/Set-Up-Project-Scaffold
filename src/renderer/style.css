@@ -6,3 +6,15 @@
 button {
   cursor: pointer;
 }
+input {
+  outline: none;
+}
+input:focus {
+  outline: none;
+}
+select {
+  outline: none;
+}
+select:focus {
+  outline: none;
+}

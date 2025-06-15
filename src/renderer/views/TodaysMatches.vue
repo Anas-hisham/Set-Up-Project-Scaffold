@@ -1,3 +1,241 @@
+<script setup>
+/* -----------------------------------------------
+✅ Imports
+-------------------------------------------------- */
+import { ref, reactive, watch, onMounted } from 'vue'
+
+/* -----------------------------------------------
+✅ Props
+-------------------------------------------------- */
+defineProps({
+  displayMode: {
+    type: String,
+    default: 'dark',
+  },
+})
+
+/* -----------------------------------------------
+✅ Alert state & functions
+-------------------------------------------------- */
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
+
+function showAlert(text) {
+  alert.text = text
+  alert.showAlert = true
+}
+
+function closeAlert() {
+  alert.showAlert = false
+}
+
+/* -----------------------------------------------
+✅ Match info & matches state
+-------------------------------------------------- */
+const matchInfo = ref({
+  date: '',
+})
+
+const matches = ref([
+  {
+    firstMatch: {
+      matchTime: '',
+      leftTeamName: '',
+      rightTeamName: '',
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
+    },
+    firstMatchImages: {
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
+    },
+  },
+  {
+    secondMatch: {
+      matchTime: '',
+      leftTeamName: '',
+      rightTeamName: '',
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
+    },
+    secondMatchImages: {
+      leftTeamLogo: '',
+      rightTeamLogo: '',
+      leftTeamFlag: '',
+      rightTeamFlag: '',
+    },
+  },
+])
+
+/* -----------------------------------------------
+✅ Open image dialog and set image
+-------------------------------------------------- */
+async function openImageDialog(matchIndex, field) {
+  try {
+    const result = await window.myAPI.openFileDialog({
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }],
+    })
+
+    if (result.canceled || !result.filePaths.length) return
+
+    const imagePath = result.filePaths[0]
+    const fileData = await window.myAPI.readFile(imagePath)
+    const blob = new Blob([fileData])
+    const imageUrl = URL.createObjectURL(blob)
+
+    const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
+    const imagesKey = matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'
+
+    // Clean up previous image
+    if (matches.value[matchIndex][imagesKey][field]) {
+      URL.revokeObjectURL(matches.value[matchIndex][imagesKey][field])
+    }
+
+    matches.value[matchIndex][matchKey][field] = imagePath
+    matches.value[matchIndex][imagesKey][field] = imageUrl
+  } catch (error) {
+    console.error('Error loading image:', error)
+    window.myAPI.showErrorDialog('Failed to load image')
+  }
+}
+
+/* -----------------------------------------------
+✅ Remove image (file path + display URL)
+-------------------------------------------------- */
+function removeImage(matchIndex, field) {
+  const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
+  const imagesKey = matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'
+
+  if (matches.value[matchIndex][imagesKey][field]) {
+    URL.revokeObjectURL(matches.value[matchIndex][imagesKey][field])
+  }
+
+  matches.value[matchIndex][matchKey][field] = ''
+  matches.value[matchIndex][imagesKey][field] = ''
+}
+
+/* -----------------------------------------------
+✅ Save matches to file (excluding display URLs)
+-------------------------------------------------- */
+async function saveMatches() {
+  try {
+    const dataToSave = {
+      info: matchInfo.value,
+      matches: matches.value.map(match => ({
+        firstMatch: match.firstMatch,
+        secondMatch: match.secondMatch,
+      })),
+    }
+
+    await window.myAPI.saveMatches(JSON.stringify(dataToSave))
+    showAlert('Matches saved successfully!')
+  } catch (err) {
+    console.error('Error saving Matches:', err)
+    window.myAPI.logError(`Error saving Matches: ${err.message}`)
+  }
+}
+
+/* -----------------------------------------------
+✅ Load saved data from cache
+-------------------------------------------------- */
+async function loadDataCache() {
+  try {
+    const loaded = await window.myAPI.loadMatchesCache()
+    if (!loaded) return
+
+    const parsedData = typeof loaded === 'string' ? JSON.parse(loaded) : loaded
+
+    if (parsedData.info) {
+      matchInfo.value.date = parsedData.info.date || ''
+    }
+
+    if (Array.isArray(parsedData.matches)) {
+      for (let i = 0; i < parsedData.matches.length; i++) {
+        const matchData = parsedData.matches[i]
+
+        if (matchData.firstMatch) {
+          matches.value[i].firstMatch = { ...matchData.firstMatch }
+        }
+        if (matchData.secondMatch) {
+          matches.value[i].secondMatch = { ...matchData.secondMatch }
+        }
+
+        if (matchData.firstMatch) {
+          await loadImageForField(i, 'firstMatch', 'leftTeamLogo')
+          await loadImageForField(i, 'firstMatch', 'rightTeamLogo')
+          await loadImageForField(i, 'firstMatch', 'leftTeamFlag')
+          await loadImageForField(i, 'firstMatch', 'rightTeamFlag')
+        }
+
+        if (matchData.secondMatch) {
+          await loadImageForField(i, 'secondMatch', 'leftTeamLogo')
+          await loadImageForField(i, 'secondMatch', 'rightTeamLogo')
+          await loadImageForField(i, 'secondMatch', 'leftTeamFlag')
+          await loadImageForField(i, 'secondMatch', 'rightTeamFlag')
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error loading Matches:', e)
+    window.myAPI.logError(`Error loading Matches: ${e.message}`)
+  }
+}
+
+/* -----------------------------------------------
+✅ Load image for a field from saved path
+-------------------------------------------------- */
+async function loadImageForField(matchIndex, matchKey, field) {
+  const path = matches.value[matchIndex][matchKey][field]
+  if (!path) return
+
+  try {
+    const fileData = await window.myAPI.readFile(path)
+    const blob = new Blob([fileData])
+    const imageUrl = URL.createObjectURL(blob)
+
+    const imagesKey = matchKey === 'firstMatch' ? 'firstMatchImages' : 'secondMatchImages'
+    matches.value[matchIndex][imagesKey][field] = imageUrl
+  } catch (error) {
+    console.error(`Error loading image for ${field}:`, error)
+    matches.value[matchIndex][matchKey][field] = ''
+  }
+}
+
+/* -----------------------------------------------
+✅ Auto-save to cache when matchInfo or matches change
+-------------------------------------------------- */
+watch(
+  [() => matchInfo.value, () => matches.value],
+  () => {
+    const dataToSave = {
+      info: matchInfo.value,
+      matches: matches.value.map(match => ({
+        firstMatch: match.firstMatch,
+        secondMatch: match.secondMatch,
+      })),
+    }
+    window.myAPI.saveMatchesCache(JSON.stringify(dataToSave))
+  },
+  { deep: true }
+)
+
+/* -----------------------------------------------
+✅ On component mount, load cached data
+-------------------------------------------------- */
+onMounted(() => {
+  loadDataCache()
+})
+</script>
+
+
 <template>
   <div :class="displayMode === 'light' ? 'light-mode' : 'dark-mode'">
     <h1
@@ -122,7 +360,7 @@
             </div>
           </div>
 
-          <!-- Logo and Flag Uploads (labels not needed for images, using span instead) -->
+          <!-- Logo and Flag Uploads -->
           <div
             class="grid grid-cols-2 gap-4"
             :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
@@ -131,30 +369,24 @@
             <div class="flex justify-between items-center border px-4 py-2">
               <span class="opacity-60">Left Team Logo</span>
               <div class="flex items-center gap-2">
-                <input
-                  type="file"
-                  class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'leftTeamLogo', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'leftTeamLogo')"
-                />
                 <img
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
-                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamLogo"
+                  :src="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamLogo"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'leftTeamLogo')"
+                  @click="openImageDialog(matchIndex, 'leftTeamLogo')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamLogo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamLogo"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'leftTeamLogo')"
+                  @click="removeImage(matchIndex, 'leftTeamLogo')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'leftTeamLogo')"
+                  @click="openImageDialog(matchIndex, 'leftTeamLogo')"
                 >
                   + ADD
                 </button>
@@ -165,30 +397,24 @@
             <div class="flex justify-between items-center border px-4 py-2">
               <span class="opacity-60">Right Team Logo</span>
               <div class="flex items-center gap-2">
-                <input
-                  type="file"
-                  class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'rightTeamLogo', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'rightTeamLogo')"
-                />
                 <img
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
-                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamLogo"
+                  :src="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamLogo"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'rightTeamLogo')"
+                  @click="openImageDialog(matchIndex, 'rightTeamLogo')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamLogo']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamLogo"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'rightTeamLogo')"
+                  @click="removeImage(matchIndex, 'rightTeamLogo')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'rightTeamLogo')"
+                  @click="openImageDialog(matchIndex, 'rightTeamLogo')"
                 >
                   + ADD
                 </button>
@@ -199,30 +425,24 @@
             <div class="flex justify-between items-center border px-4 py-2">
               <span class="opacity-60">Left Team Flag</span>
               <div class="flex items-center gap-2">
-                <input
-                  type="file"
-                  class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'leftTeamFlag', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'leftTeamFlag')"
-                />
                 <img
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
-                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamFlag"
+                  :src="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamFlag"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'leftTeamFlag')"
+                  @click="openImageDialog(matchIndex, 'leftTeamFlag')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['leftTeamFlag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].leftTeamFlag"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'leftTeamFlag')"
+                  @click="removeImage(matchIndex, 'leftTeamFlag')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'leftTeamFlag')"
+                  @click="openImageDialog(matchIndex, 'leftTeamFlag')"
                 >
                   + ADD
                 </button>
@@ -233,30 +453,24 @@
             <div class="flex justify-between items-center border px-4 py-2">
               <span class="opacity-60">Right Team Flag</span>
               <div class="flex items-center gap-2">
-                <input
-                  type="file"
-                  class="hidden"
-                  :ref="(el) => setFileInputRef(matchIndex, 'rightTeamFlag', el)"
-                  @change="(e) => uploadImage(e, matchIndex, 'rightTeamFlag')"
-                />
                 <img
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
-                  :src="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamFlag"
+                  :src="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamFlag"
                   class="w-8 h-8 object-cover cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'rightTeamFlag')"
+                  @click="openImageDialog(matchIndex, 'rightTeamFlag')"
                   title="Click to change image"
                 />
                 <button
-                  v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch']['rightTeamFlag']"
+                  v-if="match[matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'].rightTeamFlag"
                   class="text-red-600 font-semibold hover:underline"
-                  @click="() => deleteImage(matchIndex, 'rightTeamFlag')"
+                  @click="removeImage(matchIndex, 'rightTeamFlag')"
                 >
                   Delete
                 </button>
                 <button
                   v-else
                   class="text-green-400 font-semibold cursor-pointer"
-                  @click="triggerFileInput(matchIndex, 'rightTeamFlag')"
+                  @click="openImageDialog(matchIndex, 'rightTeamFlag')"
                 >
                   + ADD
                 </button>
@@ -271,7 +485,7 @@
     <div class="flex justify-center">
       <button
         @click="saveMatches"
-        class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+        class="px-6 py-3 bg-green-600 text-white  hover:bg-green-700 font-semibold"
       >
         Save Matches
       </button>
@@ -284,7 +498,7 @@
     @click.self="closeAlert"
   >
     <div
-      class="relative p-6 rounded-xl shadow-lg w-80 text-center"
+      class="relative p-6  shadow-lg w-80 text-center"
       :class="[displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
       <!-- Close Button -->
@@ -297,7 +511,7 @@
       <p class="mb-4">{{ alert.text }}</p>
 
       <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 "
         @click="closeAlert"
       >
         OK
@@ -306,141 +520,6 @@
   </div>
 </template>
 
-<script setup>
-import { onMounted, ref, watch, reactive } from 'vue'
-
-defineProps({
-  displayMode: {
-    type: String,
-    default: 'dark',
-  },
-})
-
-const alert = reactive({
-  showAlert: false,
-  text: '',
-})
-
-function showAlert(text) {
-  alert.text = text
-  alert.showAlert = true
-}
-
-function closeAlert() {
-  alert.showAlert = false
-}
-
-const matchInfo = ref({
-  date: '',
-})
-
-const matches = ref([
-  {
-    firstMatch: {
-      matchTime: '',
-      leftTeamName: '',
-      rightTeamName: '',
-      leftTeamLogo: '',
-      rightTeamLogo: '',
-      leftTeamFlag: '',
-      rightTeamFlag: '',
-    },
-  },
-  {
-    secondMatch: {
-      matchTime: '',
-      leftTeamName: '',
-      rightTeamName: '',
-      leftTeamLogo: '',
-      rightTeamLogo: '',
-      leftTeamFlag: '',
-      rightTeamFlag: '',
-    },
-  },
-])
-
-const fileInputRefs = ref({})
-
-function setFileInputRef(index, field, el) {
-  if (!fileInputRefs.value[index]) fileInputRefs.value[index] = {}
-  fileInputRefs.value[index][field] = el
-}
-
-function triggerFileInput(index, field) {
-  const inputEl = fileInputRefs.value[index]?.[field]
-  if (inputEl) inputEl.click()
-}
-
-function uploadImage(event, matchIndex, field) {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = () => {
-    const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
-
-    matches.value[matchIndex][matchKey][field] = reader.result
-  }
-  reader.readAsDataURL(file)
-}
-
-function deleteImage(matchIndex, field) {
-  const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
-
-  matches.value[matchIndex][matchKey][field] = ''
-}
-
-async function saveMatches() {
-  try {
-    const dataToSave = {
-      info: matchInfo.value,
-      matches: matches.value,
-    }
-    await window.myAPI.saveMatches(JSON.stringify(dataToSave))
-    showAlert('Matches saved successfully!')
-  } catch (err) {
-    console.error('Error saving Matches:', err)
-    window.myAPI.logError(`Error saving Matches: ${err.message}`)
-  }
-}
-
-async function loadDataCache() {
-  try {
-    const loaded = await window.myAPI.loadMatchesCache()
-    if (loaded) {
-      const parsedData = typeof loaded === 'string' ? JSON.parse(loaded) : loaded
-
-      if (parsedData.info) {
-        matchInfo.value.date = parsedData.info.date || ''
-      }
-
-      if (parsedData.matches && Array.isArray(parsedData.matches)) {
-        matches.value = parsedData.matches
-      }
-    }
-  } catch (e) {
-    console.error('Error loading Matches:', e)
-    window.myAPI.logError(`Error loading Matches: ${e.message}`)
-  }
-}
-
-watch(
-  [() => matchInfo.value, () => matches.value],
-  () => {
-    const dataToSave = {
-      info: matchInfo.value,
-      matches: matches.value,
-    }
-    window.myAPI.saveMatchesCache(JSON.stringify(dataToSave))
-  },
-  { deep: true },
-)
-
-onMounted(() => {
-  loadDataCache()
-})
-</script>
-
 <style scoped>
 .dark-mode input[type='date'],
 .dark-mode input[type='time'] {
@@ -448,7 +527,6 @@ onMounted(() => {
 }
 input {
   outline: none;
-  border-radius: 4px;
   border: 1px solid #555;
   background-color: transparent;
   transition: border-color 0.2s;
@@ -464,3 +542,4 @@ input::placeholder {
   opacity: 1 !important;
 }
 </style>
+

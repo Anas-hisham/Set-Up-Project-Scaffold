@@ -137,7 +137,7 @@
           </div>
         </div>
 
-        <!-- Hero Image -->
+        <!-- Hero Image Section remains the same -->
         <div class="grid gap-2">
           <div
             class="flex justify-between border px-4 h-14 items-center gap-3"
@@ -145,25 +145,19 @@
               props.displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'
             "
           >
-            <input
-              type="file"
-              class="hidden"
-              :ref="(el) => (heroRefs[index] = el)"
-              @change="handleFileChange($event, index, 'heroImage')"
-            />
             <span class="text-sm opacity-65">Hero Image</span>
-            <div v-if="player.heroImage" class="flex items-center gap-2">
+            <div v-if="heroImages[index]" class="flex items-center gap-2">
               <img
-                :src="player.heroImage"
+                :src="heroImages[index]"
                 alt="Hero"
-                class="w-12 h-12 object-cover cursor-pointer rounded"
-                @click="() => triggerFileInput(heroRefs, index)"
+                class="w-12 h-12 object-cover cursor-pointer "
+                @click="openHeroImageDialog(index)"
                 title="Click to change image"
               />
               <button
                 type="button"
                 class="text-red-500 font-semibold hover:underline"
-                @click="() => deleteHeroImage(index)"
+                @click="removeHeroImage(index)"
                 title="Delete image"
               >
                 Delete
@@ -173,7 +167,7 @@
               v-else
               class="font-semibold cursor-pointer"
               :class="props.displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
-              @click="() => triggerFileInput(heroRefs, index)"
+              @click="openHeroImageDialog(index)"
             >
               + ADD
             </button>
@@ -285,7 +279,7 @@
   <div class="flex justify-center mt-3">
     <button
       @click="savePlayers"
-      class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+      class="px-6 py-3 bg-green-600 text-white hover:bg-green-700 font-semibold"
     >
       Save Players
     </button>
@@ -298,9 +292,7 @@
   >
     <div
       class="relative p-6 rounded-xl shadow-lg w-80 text-center"
-      :class="[
-        props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
-      ]"
+      :class="[props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
       <!-- Close Button -->
       <button
@@ -320,12 +312,17 @@
       </button>
     </div>
   </div>
-
 </template>
 
 <script setup>
-import { onMounted, ref, watch, reactive } from 'vue'
+// ─────────────────────────────────────
+// ✅ Imports
+// ─────────────────────────────────────
+import { ref, reactive, watch, onMounted } from 'vue'
 
+// ─────────────────────────────────────
+// ✅ Props
+// ─────────────────────────────────────
 const props = defineProps({
   displayMode: {
     type: String,
@@ -333,6 +330,11 @@ const props = defineProps({
   },
 })
 
+// ─────────────────────────────────────
+// ✅ Reactive State
+// ─────────────────────────────────────
+
+// Players data list
 const players = ref([
   {
     playerName: '',
@@ -346,86 +348,134 @@ const players = ref([
   },
 ])
 
+// Hero image preview URLs
+const heroImages = ref([''])
+
+// Alert box data
 const alert = reactive({
   showAlert: false,
   text: '',
 })
 
+// ─────────────────────────────────────
+// ✅ Alert Handlers
+// ─────────────────────────────────────
+
+// Show alert with custom message
 function showAlert(text) {
   alert.text = text
   alert.showAlert = true
 }
 
+// Close alert box
 function closeAlert() {
   alert.showAlert = false
 }
 
-const heroRefs = ref([])
+// ─────────────────────────────────────
+// ✅ Image Handling
+// ─────────────────────────────────────
 
-function triggerFileInput(refs, index) {
-  try {
-    if (refs[index]) {
-      refs[index].click()
-    }
-  } catch (err) {
-    window.myAPI.logError(`Error triggering file input: ${err.message}`)
-  }
+// Open image file dialog and preview image
+function openHeroImageDialog(index) {
+  window.myAPI
+    .openFileDialog({
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }],
+    })
+    .then((result) => {
+      if (result.canceled || !result.filePaths.length) return
+
+      const imagePath = result.filePaths[0]
+
+      window.myAPI.readFile(imagePath).then((fileData) => {
+          const blob = new Blob([fileData])
+          const imageUrl = URL.createObjectURL(blob)
+
+          heroImages.value[index] = imageUrl
+          players.value[index].heroImage = imagePath
+        })
+        .catch(() => {
+          window.myAPI.showErrorDialog('Failed to read hero image')
+        })
+    })
+    .catch(() => {
+      window.myAPI.showErrorDialog('Failed to open image dialog')
+    })
 }
 
-function handleFileChange(event, index, type) {
-  try {
-    const file = event.target.files[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        players.value[index][type] = reader.result
-      }
-      reader.readAsDataURL(file)
-    }
-  } catch (err) {
-    window.myAPI.logError(`Error handling file change: ${err.message}`)
+// Remove selected hero image
+function removeHeroImage(index) {
+  if (heroImages.value[index]) {
+    URL.revokeObjectURL(heroImages.value[index])
   }
+  heroImages.value[index] = ''
+  players.value[index].heroImage = ''
 }
 
-function deleteHeroImage(index) {
-  try {
-    players.value[index].heroImage = ''
-  } catch (err) {
-    window.myAPI.logError(`Error deleting hero image: ${err.message}`)
-  }
+// ─────────────────────────────────────
+// ✅ Save & Load Players
+// ─────────────────────────────────────
+
+// Save player data (only first player)
+function savePlayers() {
+  const data = JSON.stringify(players.value[0])
+  window.myAPI
+    .savePlayer(data)
+    .then(() => {
+      showAlert('Players saved successfully!')
+    })
+    .catch(() => {
+      window.myAPI.showErrorDialog('Failed to save players')
+    })
 }
 
-async function savePlayers() {
-  try {
-    const playersToSave = JSON.parse(JSON.stringify(players.value[0]))
-    await window.myAPI.savePlayer(JSON.stringify(playersToSave))
-    showAlert('Players saved successfully!')
-  } catch (err) {
-    window.myAPI.logError(`Error saving players: ${err.message}`)
-  }
+// Load cached players and preview images
+function loadCachedPlayers() {
+  window.myAPI
+    .loadPlayerCache()
+    .then((cached) => {
+      if (!Array.isArray(cached)) return
+
+      players.value = cached
+      heroImages.value = []
+
+      cached.forEach((player, i) => {
+        if (player.heroImage) {
+          window.myAPI
+            .readFile(player.heroImage)
+            .then((fileData) => {
+              const blob = new Blob([fileData])
+              heroImages.value[i] = URL.createObjectURL(blob)
+            })
+            .catch(() => {
+              heroImages.value[i] = ''
+            })
+        } else {
+          heroImages.value[i] = ''
+        }
+      })
+    })
+    .catch(() => {
+      window.myAPI.showErrorDialog('Failed to load player cache')
+    })
 }
 
+// ─────────────────────────────────────
+// ✅ Lifecycle Hooks
+// ─────────────────────────────────────
+onMounted(() => {
+  loadCachedPlayers()
+})
+
+// ─────────────────────────────────────
+// ✅ Watchers
+// ─────────────────────────────────────
+// Save cache whenever players change
 watch(
   players,
   () => {
-    try {
-      const plainPlayers = JSON.parse(JSON.stringify(players.value))
-      window.myAPI.savePlayerCache(JSON.stringify(plainPlayers))
-    } catch (err) {
-      window.myAPI.logError(`Error saving player cache: ${err.message}`)
-    }
+    window.myAPI.savePlayerCache(JSON.stringify(players.value))
   },
   { deep: true },
 )
-
-onMounted(async () => {
-  try {
-    const cached = await window.myAPI.loadPlayerCache()
-    if (cached && Array.isArray(cached)) {
-      players.value = cached
-    }
-  } catch (err) {
-    window.myAPI.logError(`Error loading player cache: ${err.message}`)
-  }
-})
 </script>

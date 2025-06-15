@@ -13,10 +13,10 @@
         :key="index"
         :team="team"
         :index="index"
-        :imageRefs="imageRefs"
-        :flagRefs="flagRefs"
-        :handleFileChange="handleFileChange"
-        :triggerFileInput="triggerFileInput"
+        :teamImages="teamImages"
+        :teamFlags="teamFlags"
+        :openTeamImageOrFlagDialog="openTeamImageOrFlagDialog"
+        :removeTeamImageOrFlag="removeTeamImageOrFlag"
         :displayMode="displayMode"
       />
     </div>
@@ -25,34 +25,32 @@
   <div class="flex justify-center mb-10">
     <button
       @click="saveTeamsToDisk"
-      class="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"
+      class="px-6 py-3 bg-green-600 text-white  hover:bg-green-700 font-semibold"
     >
       Save Teams
     </button>
   </div>
-    <div
+
+  <div
     v-if="alert.showAlert"
     class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
     @click.self="closeAlert"
   >
     <div
-      class="relative p-6 rounded-xl shadow-lg w-80 text-center"
+      class="relative p-6  shadow-lg w-80 text-center"
       :class="[
         props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
       ]"
     >
-      <!-- Close Button -->
       <button
         @click="closeAlert"
         class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
       >
         ×
       </button>
-
       <p class="mb-4">{{ alert.text }}</p>
-
       <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 "
         @click="closeAlert"
       >
         OK
@@ -60,25 +58,34 @@
     </div>
   </div>
 </template>
-
 <script setup>
+// ─────────────────────────────────────
+// ✅ Imports
+// ─────────────────────────────────────
 import { ref, onMounted, watch, computed, reactive } from 'vue'
 import TeamInputs from '../components/TeamInputs.vue'
 
+// ─────────────────────────────────────
+// ✅ Props
+// ─────────────────────────────────────
 const props = defineProps({ displayMode: String })
 const isDarkMode = computed(() => props.displayMode === 'dark')
 
-const teams = ref([])
-const imageRefs = ref([])
-const flagRefs = ref([])
-
-
+// ─────────────────────────────────────
+// ✅ Reactive State
+// ─────────────────────────────────────
+const teams = ref([])                 // List of all teams
+const teamImages = ref([])           // Preview URLs for team images
+const teamFlags = ref([])            // Preview URLs for team flags
 
 const alert = reactive({
   showAlert: false,
   text: '',
 })
 
+// ─────────────────────────────────────
+// ✅ Alert Functions
+// ─────────────────────────────────────
 function showAlert(text) {
   alert.text = text
   alert.showAlert = true
@@ -88,12 +95,9 @@ function closeAlert() {
   alert.showAlert = false
 }
 
-
-
-
-
-
-// ----- Factory -----
+// ─────────────────────────────────────
+// ✅ Factory: Create a blank team object
+// ─────────────────────────────────────
 const createEmptyTeam = () => ({
   teamImage: '',
   teamFlag: '',
@@ -101,72 +105,136 @@ const createEmptyTeam = () => ({
   teamScore: '',
 })
 
-// ----- Init Data -----
+// ─────────────────────────────────────
+// ✅ Initialize Teams & UI Placeholders
+// ─────────────────────────────────────
 const initializeTeams = () => {
   teams.value = Array.from({ length: 32 }, createEmptyTeam)
+  teamImages.value = Array(32).fill('')
+  teamFlags.value = Array(32).fill('')
 }
 
-// ----- File Handling -----
-const handleFileChange = (event, index, field) => {
-  const file = event.target.files[0]
-  if (!file) return
+// ─────────────────────────────────────
+// ✅ Image Handlers
+// ─────────────────────────────────────
+const openTeamImageOrFlagDialog = async (index, type) => {
+  try {
+    const result = await window.myAPI.openFileDialog({
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }]
+    })
 
-  const reader = new FileReader()
-  reader.onload = () => {
-    teams.value[index][field] = reader.result
+    if (result.canceled || !result.filePaths.length) return
+
+    const imagePath = result.filePaths[0]
+    const fileData = await window.myAPI.readFile(imagePath)
+    const blob = new Blob([fileData])
+    const imageUrl = URL.createObjectURL(blob)
+
+    const targetList = type === 'image' ? teamImages : teamFlags
+    const teamProp = type === 'image' ? 'teamImage' : 'teamFlag'
+
+    if (targetList.value[index]) {
+      URL.revokeObjectURL(targetList.value[index])
+    }
+
+    targetList.value[index] = imageUrl
+    teams.value[index][teamProp] = imagePath
+  } catch {
+    const errorType = type === 'image' ? 'team image' : 'team flag'
+    window.myAPI.showErrorDialog(`Failed to load ${errorType}`)
   }
-  reader.readAsDataURL(file)
 }
 
-const triggerFileInput = (refsArray, index) => {
-  refsArray[index]?.click()
+
+// ─────────────────────────────────────
+// ✅ Remove Images
+// ─────────────────────────────────────
+const removeTeamImageOrFlag = (index, type) => {
+  const targetList = type === 'image' ? teamImages : teamFlags
+  const teamProp = type === 'image' ? 'teamImage' : 'teamFlag'
+
+  if (targetList.value[index]) {
+    URL.revokeObjectURL(targetList.value[index])
+  }
+
+  targetList.value[index] = ''
+  teams.value[index][teamProp] = ''
 }
 
-// ----- Storage Layer -----
+
+// ─────────────────────────────────────
+// ✅ Save & Load to/from Disk
+// ─────────────────────────────────────
 const saveTeamsToDisk = async () => {
   try {
     await window.myAPI.saveTeams(JSON.stringify(teams.value))
     showAlert('Teams saved successfully!')
   } catch (err) {
-    logError('Error saving teams', err)
+    window.myAPI.logError(`Error saving teams: ${err.message}`)
+    window.myAPI.showErrorDialog('Failed to save teams')
   }
 }
 
 const loadTeamsFromCache = async () => {
   try {
     const cached = await window.myAPI.loadTeamsCache()
-    if (Array.isArray(cached)) {
-      cached.forEach((team, index) => {
-        if (!teams.value[index]) return
-        teams.value[index] = {
-          teamImage: team.teamImage || '',
-          teamFlag: team.teamFlag || '',
-          teamName: team.teamName || '',
-          teamScore: team.teamScore || '',
+    if (!Array.isArray(cached)) return
+
+    // Prepare previews
+    teamImages.value = Array(cached.length).fill('')
+    teamFlags.value = Array(cached.length).fill('')
+
+    for (let i = 0; i < cached.length; i++) {
+      if (!teams.value[i]) teams.value[i] = createEmptyTeam()
+
+      teams.value[i].teamName = cached[i].teamName || ''
+      teams.value[i].teamScore = cached[i].teamScore || ''
+
+      // Team Image
+      if (cached[i].teamImage) {
+        try {
+          const fileData = await window.myAPI.readFile(cached[i].teamImage)
+          const blob = new Blob([fileData])
+          teamImages.value[i] = URL.createObjectURL(blob)
+          teams.value[i].teamImage = cached[i].teamImage
+        } catch {
+          teamImages.value[i] = ''
+          teams.value[i].teamImage = ''
         }
-      })
+      }
+
+      // Team Flag
+      if (cached[i].teamFlag) {
+        try {
+          const fileData = await window.myAPI.readFile(cached[i].teamFlag)
+          const blob = new Blob([fileData])
+          teamFlags.value[i] = URL.createObjectURL(blob)
+          teams.value[i].teamFlag = cached[i].teamFlag
+        } catch {
+          teamFlags.value[i] = ''
+          teams.value[i].teamFlag = ''
+        }
+      }
     }
   } catch (err) {
-    logError('Failed to load teams', err)
+    window.myAPI.logError(`Failed to load teams: ${err.message}`)
   }
 }
 
-const logError = (message, error) => {
-  window.myAPI.logError(`${message}: ${error.message}`)
-}
+// ─────────────────────────────────────
+// ✅ Watchers
+// ─────────────────────────────────────
+// Auto save cache on any team change
+watch(teams, () => {
+  window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
+}, { deep: true })
 
-// ----- Auto Save on Change -----
-watch(
-  teams,
-  () => {
-    window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
-  },
-  { deep: true },
-)
-
-// ----- Lifecycle -----
+// ─────────────────────────────────────
+// ✅ Lifecycle Hook
+// ─────────────────────────────────────
 onMounted(() => {
   initializeTeams()
   loadTeamsFromCache()
 })
 </script>
+

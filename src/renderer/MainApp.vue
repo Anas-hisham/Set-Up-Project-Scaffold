@@ -29,7 +29,7 @@
           settings.navMode === 'full'
             ? 'col-span-11 md:col-span-12 lg:col-span-13'
             : 'col-span-14 lg:col-span-14',
-          settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black',
+          settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-white text-black',
         ]"
       >
         <Welcome v-if="route.path === '/welcome'" :displayMode="settings.displayMode" />
@@ -55,9 +55,7 @@
     >
       <div
         class="relative p-6 rounded-xl shadow-lg w-96 text-center"
-        :class="
-          settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-gray-100 text-black'
-        "
+        :class="settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-white text-black'"
       >
         <!-- Close Button -->
         <button
@@ -94,6 +92,7 @@
 </template>
 
 <script setup>
+/* -------------------- Imports -------------------- */
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import SideNav from './components/SideNav.vue'
@@ -104,16 +103,18 @@ import TodayxMatches from './views/TodaysMatches.vue'
 import Settings from './views/Settings.vue'
 import Welcome from './views/Welcome.vue'
 
+/* -------------------- Router -------------------- */
 const router = useRouter()
 const route = useRoute()
 
+/* -------------------- Default Settings -------------------- */
 const defaultSettings = {
   displayMode: 'dark',
   navMode: 'full',
   savePath: '',
-  lastView: '/welcome', // Set welcome as default view
+  lastView: '/welcome',
+  viewBeforeSetting: '/welcome',
   views: [
-    { title: 'Home', path: '/welcome', visible: true },
     { title: 'Brackets View', path: '/brackets', visible: true },
     { title: 'Players Stats', path: '/players', visible: true },
     { title: "Today's Matches", path: '/matches', visible: true },
@@ -123,11 +124,12 @@ const defaultSettings = {
 
 const settings = ref({ ...defaultSettings })
 
+/* -------------------- Computed Properties -------------------- */
 const visibleViews = computed(() => settings.value.views.filter((v) => v.visible))
 const allViews = computed(() => settings.value.views)
 const currentTitle = computed(() => route.meta?.title || 'Settings')
 
-// Update info state
+/* -------------------- Update Info -------------------- */
 const updateInfo = ref({
   show: false,
   currentVersion: '',
@@ -135,13 +137,13 @@ const updateInfo = ref({
   progress: 0,
   downloading: false,
   downloaded: false,
-  wasHandled: false, // NEW FLAG
+  wasHandled: false,
 })
 
-// Run on mount
+/* -------------------- Lifecycle: onMounted -------------------- */
 onMounted(async () => {
   try {
-    // 1. Attach update listeners FIRST
+    // 1. Attach update listeners
     window.myAPI.onUpdateAvailable((_, info) => {
       if (!updateInfo.value.wasHandled) {
         updateInfo.value.show = true
@@ -158,7 +160,7 @@ onMounted(async () => {
       updateInfo.value.downloading = false
     })
 
-    // 2. Load settings
+    // 2. Load saved settings
     const savedSettings = await window.myAPI.getViewSettingsCache()
 
     if (savedSettings) {
@@ -173,35 +175,33 @@ onMounted(async () => {
         views: mergedViews,
       }
 
-      if (
-        settings.value.lastView === '/settings' &&
-        visibleViews.value.some((v) => v.path === '/settings')
-      ) {
+      // Navigation logic
+      const last = settings.value.lastView
+
+      const isVisible = (path) => visibleViews.value.some((v) => v.path === path)
+
+      if (last === '/settings' && isVisible('/settings')) {
         router.push('/settings')
-      } else if (
-        settings.value.lastView &&
-        visibleViews.value.some((v) => v.path === settings.value.lastView) &&
-        route.path !== settings.value.lastView
-      ) {
-        router.push(settings.value.lastView)
-      } else if (!visibleViews.value.some((view) => view.path === route.path)) {
+      } else if (last && isVisible(last) && route.path !== last) {
+        router.push(last)
+      } else if (!isVisible(route.path)) {
         const firstVisible = visibleViews.value[0]
         if (firstVisible) router.push(firstVisible.path)
       }
     }
 
-    // 3. Get current app version
-    const currentVer = await window.myAPI.getAppVersion()
-    updateInfo.value.currentVersion = currentVer
+    // 3. Get current version
+    updateInfo.value.currentVersion = await window.myAPI.getAppVersion()
 
-    // 4. Check for update LAST
+    // 4. Check for updates
     await window.myAPI.checkForUpdate()
   } catch (err) {
     window.myAPI.logError(`Error loading settings: ${err.message}`)
   }
 })
 
-// Save on settings change
+/* -------------------- Watchers -------------------- */
+// Save settings when they change
 watch(
   settings,
   async (newSettings) => {
@@ -215,15 +215,18 @@ watch(
   { deep: true },
 )
 
-// Update last view when navigating
+// Update lastView on route change
 watch(
   () => route.path,
   (newPath) => {
     settings.value.lastView = newPath
+    if (newPath !== '/settings') {
+      settings.value.viewBeforeSetting = newPath
+    }
   },
 )
 
-// Settings handlers
+/* -------------------- Settings Handlers -------------------- */
 function setSettings(newSettings) {
   settings.value = { ...settings.value, ...newSettings }
 }
@@ -235,28 +238,35 @@ async function resetSettings() {
   settings.value = {
     ...defaultSettings,
     savePath: path,
-    views: defaultSettings.views.map((view) => ({ ...view })),
+    // views: defaultSettings.views.map((view) => ({ ...view })),
   }
 }
 
 function openSettings() {
   if (route.path === '/settings') {
-    const lastNonSettingsView = settings.value.views.find(
-      (view) => view.path !== '/settings' && view.visible,
-    )
-    if (lastNonSettingsView) {
-      router.push(lastNonSettingsView.path)
+    if (settings.value.viewBeforeSetting) {
+      if (
+        settings.value.views.find((v) => v.visible && v.path === settings.value.viewBeforeSetting)
+      ) {
+        router.push(settings.value.viewBeforeSetting)
+      } else {
+        const lastNonSettings = settings.value.views.find(
+          (v) => v.path !== '/settings' && v.visible,
+        )
+        if (lastNonSettings) router.push(lastNonSettings.path)
+      }
     }
   } else {
     router.push('/settings')
   }
 }
+
+/* -------------------- Update Handlers -------------------- */
 function cancelUpdate() {
   updateInfo.value.show = false
-  updateInfo.value.wasHandled = true // Prevent it from showing again
+  updateInfo.value.wasHandled = true
 }
 
-// Update modal actions
 function downloadUpdate() {
   updateInfo.value.downloading = true
   updateInfo.value.wasHandled = true
@@ -265,7 +275,9 @@ function downloadUpdate() {
   window.myAPI.onUpdateDownloaded(() => {
     updateInfo.value.downloaded = true
     updateInfo.value.downloading = false
-    window.myAPI.quitAndInstall() // ✅ Call it here only
+    updateInfo.value.show = false // Add this line to close the modal
+
+  window.myAPI.installUpdate()
   })
 }
 </script>

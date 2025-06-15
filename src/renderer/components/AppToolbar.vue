@@ -2,7 +2,7 @@
   <header
     :class="[
       'app-toolbar px-6 py-4 flex items-center justify-between',
-      displayMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'
+      displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-black'
     ]"
   >
     <h1 class="text-xl font-semibold m-0">

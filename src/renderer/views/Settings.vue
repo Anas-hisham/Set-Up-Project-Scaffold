@@ -14,7 +14,7 @@
       Settings
     </h2>
 
-    <div class="my-12 text-center border-t border-gray-300 dark:border-gray-700 pt-8 px-4">
+    <div class="my-12 text-center border-gray-300 dark:border-gray-700 pt-8 px-4">
       <p
         :class="settings.displayMode === 'dark' ? 'text-gray-200' : 'text-gray-800'"
         class="text-lg font-medium"
@@ -25,7 +25,7 @@
       <button
         v-if="!updateAvailable"
         @click="checkForUpdate"
-        class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
+        class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded shadow-md"
       >
         Check for Update
       </button>
@@ -35,7 +35,7 @@
         <div v-if="updateAvailable" class="mt-4">
           <button
             @click="downloadUpdate"
-            class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded-lg shadow-md"
+            class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded shadow-md"
           >
             Download Update
           </button>
@@ -62,7 +62,7 @@
         <div v-if="updateReady" class="mt-6">
           <button
             @click="installUpdate"
-            class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded-lg shadow-md"
+            class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded shadow-md"
           >
             Restart & Install
           </button>
@@ -83,7 +83,7 @@
         </label>
         <select
           v-model="settings.displayMode"
-          class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
+          class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400"
           :class="
             settings.displayMode === 'dark'
               ? 'bg-gray-900 text-white border-gray-600'
@@ -107,7 +107,7 @@
         </label>
         <select
           v-model="settings.navMode"
-          class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
+          class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400"
           :class="
             settings.displayMode === 'dark'
               ? 'bg-gray-900 text-white border-gray-600'
@@ -126,7 +126,7 @@
             v-model="settings.savePath"
             type="text"
             :placeholder="folderPath.value ? folderPath.value : settings.savePath"
-            class="w-full p-2 rounded-lg border focus:ring-2 focus:ring-blue-400"
+            class="w-full p-2 rounded border"
             :class="
               settings.displayMode === 'dark'
                 ? 'bg-gray-900 text-white border-gray-600'
@@ -143,7 +143,7 @@
         </button>
         <button
           @click="applySavePath"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
+          class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded shadow transition"
         >
           Apply Path
         </button>
@@ -154,13 +154,13 @@
     <div class="flex flex-wrap justify-between gap-4 my-6">
       <button
         @click="resetSettings"
-        class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded-lg shadow transition"
+        class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded shadow transition"
       >
         Reset to Defaults
       </button>
       <button
         @click="clearInput"
-        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
+        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded shadow transition"
       >
         Clear Input Data
       </button>
@@ -175,7 +175,7 @@
       >
         Manage Views
       </h3>
-      <div class="bg-opacity-50 py-4 rounded-lg">
+      <div class="bg-opacity-50 py-4 rounded">
         <div
           v-for="(view, index) in withoutSettings()"
           :key="index"
@@ -230,7 +230,7 @@
           v-model="newPresetName"
           type="text"
           placeholder="New preset name"
-          class="flex-grow p-2 rounded-lg border"
+          class="flex-grow p-2 rounded border"
           :class="
             settings.displayMode === 'dark'
               ? 'bg-gray-900 text-white border-gray-600'
@@ -239,7 +239,7 @@
         />
         <button
           @click="handleSavePreset"
-          class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded-lg shadow transition"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded shadow transition"
         >
           Save Current
         </button>
@@ -359,7 +359,7 @@
     @click.self="closeAlert"
   >
     <div
-      class="relative p-6 rounded-xl shadow-lg w-100 text-center"
+      class="relative p-6 rounded shadow-lg w-100 text-center"
       :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
       <!-- Close Button -->
@@ -387,7 +387,7 @@
     @click.self="handleCancel()"
   >
     <div
-      class="relative p-6 rounded-xl shadow-lg w-100 text-center"
+      class="relative p-6 rounded shadow-lg w-100 text-center"
       :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
       <button
@@ -415,13 +415,11 @@
       </div>
     </div>
   </div>
-
-
 </template>
-
 <script setup>
 import { ref, onMounted, computed, watch, reactive } from 'vue'
 
+// ========== Props ==========
 const { settings, allViews, setSettings, resetSettings, displayMode } = defineProps({
   settings: Object,
   allViews: Array,
@@ -430,11 +428,27 @@ const { settings, allViews, setSettings, resetSettings, displayMode } = definePr
   displayMode: String,
 })
 
-const alert = reactive({
-  showAlert: false,
-  text: '',
-})
+// ========== Refs & Reactive State ==========
+const alert = reactive({ showAlert: false, text: '' })
+const confirmDialog = reactive({ show: false, message: '', resolve: null })
+const folderPath = ref('')
+const newPresetName = ref('')
+const editingName = ref(null)
+const editedPresetName = ref('')
+const updatingPreset = ref(null)
+const tempUpdatedViews = ref([])
+const lastAppliedPreset = ref(null)
+const presets = ref({})
 
+// Update UI
+const appVersion = ref('')
+const updateMessage = ref('')
+const updateAvailable = ref(false)
+const updateReady = ref(false)
+const downloadPercent = ref(0)
+const showUpdateUI = ref(false)
+
+// ========== Alert & Confirmation ==========
 function showAlert(text) {
   alert.text = text
   alert.showAlert = true
@@ -444,12 +458,6 @@ function closeAlert() {
   alert.showAlert = false
 }
 
-const confirmDialog = reactive({
-  show: false,
-  message: '',
-  resolve: null,
-})
-
 function showConfirm(message) {
   confirmDialog.message = message
   confirmDialog.show = true
@@ -457,6 +465,7 @@ function showConfirm(message) {
     confirmDialog.resolve = resolve
   })
 }
+
 function handleCancel() {
   confirmDialog.show = false
 }
@@ -464,40 +473,11 @@ function handleCancel() {
 function handleConfirm(result) {
   confirmDialog.show = false
   if (confirmDialog.resolve) {
-    // null means cancelled, true means create new, false means overwrite
     confirmDialog.resolve(result !== null ? result : false)
   }
 }
 
-async function handleSavePreset() {
-  // If we have a last applied preset, show the overwrite dialog
-  if (lastAppliedPreset.value) {
-    const shouldOverwrite = await showConfirm(
-      `Update "${lastAppliedPreset.value}" with current visibility?`,
-    )
-
-    if (shouldOverwrite) {
-      await savePreset(lastAppliedPreset.value, allViews)
-      showAlert(`Preset "${lastAppliedPreset.value}" updated!`)
-      return
-    }
-  }
-
-  // Otherwise (or if user chooses not to overwrite), require a new name
-  if (!newPresetName.value.trim()) {
-    showAlert('Please enter a name for the new preset')
-    return
-  }
-
- const presetName = newPresetName.value.trim()
-  await savePreset(presetName, allViews)
-  await applyPreset(presetName)
-  showAlert(`New preset "${presetName}" created!`)
-  newPresetName.value = ''
-}
-
-const folderPath = ref('')
-
+// ========== Folder Selection ==========
 const selectFolder = async () => {
   const path = await window.myAPI.selectFolder()
   if (path) {
@@ -506,154 +486,23 @@ const selectFolder = async () => {
   }
 }
 
-const presets = ref({})
-const newPresetName = ref('')
-const editingName = ref(null)
-const editedPresetName = ref('')
-
-const updatingPreset = ref(null)
-const tempUpdatedViews = ref([])
-
-const lastAppliedPreset = ref(null)
-
-function startUpdatingPreset(preset) {
-  updatingPreset.value = preset.name
-  // Create a deep copy of the preset views
-  tempUpdatedViews.value = JSON.parse(JSON.stringify(preset.views))
-}
-
-// Update the confirmUpdatePreset function
-async function confirmUpdatePreset(name) {
-  if (!name.trim()) return;
-
-  if (!tempUpdatedViews.value.length) {
-    return;
-  }
-
-  try {
-    // Save the updated preset (only updates the preset definition)
-    await savePreset(name, tempUpdatedViews.value);
-
-    updatingPreset.value = null;
-    tempUpdatedViews.value = [];
-
-    showAlert(`Preset "${name}" saved successfully!`);
-
-    // Reload presets to reflect changes
-    await loadPresets();
-
-    // Only apply the preset if it's the currently applied one
-    if (lastAppliedPreset.value === name) {
-      await applyCurrentPreset(name);
-    }
-
-  } catch (error) {
-    console.error('Error saving preset:', error);
-    showAlert('Failed to save preset');
-  }
-}
-
-async function applyCurrentPreset(presetName) {
-  const preset = presets.value[presetName];
-  if (!preset) return;
-
-  // Update last applied preset reference
-  lastAppliedPreset.value = presetName;
-  await window.myAPI.setLastAppliedPreset(presetName);
-
-  // Apply the preset views
-  const fullViews = allViews.map((view) => {
-    const presetView = preset.find((v) => v.title === view.title);
-    return presetView ? { ...view, visible: presetView.visible } : view;
-  });
-
-  setSettings({ ...settings, views: fullViews });
-  showAlert(`Preset "${presetName}" applied!`);
-}
-
-function cancelUpdatePreset() {
-  updatingPreset.value = null
-  tempUpdatedViews.value = []
-}
-
-async function onToggleView(index, event) {
-  const newValue = event.target.checked
-  tempUpdatedViews.value[index].visible = newValue
-}
-
-// Convert presets object to array for consistent ordering
-const presetList = computed(() => {
-  return Object.entries(presets.value).map(([name, views]) => ({ name, views }))
-})
+// ========== Preset Management ==========
+const presetList = computed(() =>
+  Object.entries(presets.value).map(([name, views]) => ({ name, views })),
+)
 
 function withoutSettings() {
   return allViews.filter((view) => view.title !== 'Settings')
 }
 
-async function updateViewVisibility(index, event) {
-  const newValue = event.target.checked
-  const view = allViews[index]
-  view.visible = newValue
-  setSettings({ ...settings, views: [...allViews] })
-}
-
-async function clearInput() {
-  try {
-    await window.myAPI.clearDataCache()
-  } catch (err) {
-    window.myAPI.logError(`Failed to clear data: ${err.message}`)
-  }
-}
-
-async function applySavePath() {
-  try {
-    const pathToApply = settings.savePath.trim()
-    await window.myAPI.setCustomSavePath(pathToApply)
-  } catch (err) {
-    window.myAPI.logError(`Error updating save path: ${err.message}`)
-  }
-}
-watch(
-  () => settings.savePath,
-  async () => {
-    if (settings.savePath.trim() === '') {
-      await window.myAPI.setCustomSavePath(settings.savePath.trim())
-    }
-  },
-)
-
-async function loadPresets() {
-  try {
-    presets.value = (await window.myAPI.getPresets()) || {};
-
-    // Check if last applied preset still exists
-    if (lastAppliedPreset.value && !presets.value[lastAppliedPreset.value]) {
-      lastAppliedPreset.value = null;
-      await window.myAPI.setLastAppliedPreset('');
-    }
-  } catch (error) {
-    window.myAPI.logError('Error loading presets:', error);
-  }
-}
 async function savePreset(name, views) {
   if (!name.trim()) return
 
   try {
-    const formattedViews = views.map((view) => ({
-      title: view.title,
-      visible: view.visible,
-    }))
-
+    const formattedViews = views.map((v) => ({ title: v.title, visible: v.visible }))
     await window.myAPI.savePreset(name.trim(), formattedViews)
-
-    // Update local cache
     presets.value[name] = [...formattedViews]
-
-    // If it was a "new" preset
-    if (newPresetName.value === name) {
-      newPresetName.value = ''
-    }
-
+    if (newPresetName.value === name) newPresetName.value = ''
     return true
   } catch (error) {
     window.myAPI.logError('Error saving preset:', error)
@@ -661,7 +510,21 @@ async function savePreset(name, views) {
   }
 }
 
-async function deletePreset(name, index) {
+async function loadPresets() {
+  try {
+    presets.value = (await window.myAPI.getPresets()) || {}
+    if (lastAppliedPreset.value && !presets.value[lastAppliedPreset.value]) {
+      lastAppliedPreset.value = null
+      await window.myAPI.setLastAppliedPreset('')
+          const allVisibleViews = allViews.map(view => ({ ...view, visible: true }))
+    setSettings({ ...settings, views: allVisibleViews })
+    }
+  } catch (error) {
+    window.myAPI.logError('Error loading presets:', error)
+  }
+}
+
+async function deletePreset(name) {
   try {
     await window.myAPI.deletePreset(name)
     await loadPresets()
@@ -669,23 +532,89 @@ async function deletePreset(name, index) {
     window.myAPI.logError('Error deleting preset:', error)
   }
 }
+
+function startUpdatingPreset(preset) {
+  updatingPreset.value = preset.name
+  tempUpdatedViews.value = JSON.parse(JSON.stringify(preset.views))
+}
+
+function cancelUpdatePreset() {
+  updatingPreset.value = null
+  tempUpdatedViews.value = []
+}
+
+async function confirmUpdatePreset(name) {
+  if (!name.trim() || !tempUpdatedViews.value.length) return
+
+  try {
+    await savePreset(name, tempUpdatedViews.value)
+    updatingPreset.value = null
+    tempUpdatedViews.value = []
+    showAlert(`Preset "${name}" saved successfully!`)
+    await loadPresets()
+    if (lastAppliedPreset.value === name) {
+      await applyCurrentPreset(name)
+    }
+  } catch (error) {
+    console.error('Error saving preset:', error)
+    showAlert('Failed to save preset')
+  }
+}
+
+async function handleSavePreset() {
+  if (lastAppliedPreset.value) {
+    const shouldOverwrite = await showConfirm(
+      `Update "${lastAppliedPreset.value}" with current visibility?`,
+    )
+    if (shouldOverwrite) {
+      await savePreset(lastAppliedPreset.value, allViews)
+      showAlert(`Preset "${lastAppliedPreset.value}" updated!`)
+      return
+    }
+  }
+
+  if (!newPresetName.value.trim()) {
+    showAlert('Please enter a name for the new preset')
+    return
+  }
+
+  const presetName = newPresetName.value.trim()
+  await savePreset(presetName, allViews)
+  await applyPreset(presetName)
+  showAlert(`New preset "${presetName}" created!`)
+  newPresetName.value = ''
+}
+
+// ========== Preset Apply & Rename ==========
+async function applyCurrentPreset(presetName) {
+  const preset = presets.value[presetName]
+  if (!preset) return
+
+  lastAppliedPreset.value = presetName
+  await window.myAPI.setLastAppliedPreset(presetName)
+
+  const fullViews = allViews.map((view) => {
+    const presetView = preset.find((v) => v.title === view.title)
+    return presetView ? { ...view, visible: presetView.visible } : view
+  })
+
+  setSettings({ ...settings, views: fullViews })
+  showAlert(`Preset "${presetName}" applied!`)
+}
+
 async function applyPreset(name) {
   try {
-    const preset = presets.value[name];
+    const preset = presets.value[name]
     if (!preset) {
-      showAlert('Preset not found');
-      return;
+      showAlert('Preset not found')
+      return
     }
 
-    // Update last applied preset reference
-    lastAppliedPreset.value = name;
-    await window.myAPI.setLastAppliedPreset(name);
-
-    // Don't apply the preset views immediately here
-    // We'll handle the application when user confirms
+    lastAppliedPreset.value = name
+    await window.myAPI.setLastAppliedPreset(name)
   } catch (error) {
-    console.error('Error applying preset:', error);
-    showAlert('Failed to apply preset. Check console for details.');
+    console.error('Error applying preset:', error)
+    showAlert('Failed to apply preset. Check console for details.')
   }
 }
 
@@ -705,13 +634,10 @@ async function confirmRename(oldName) {
 
   try {
     await window.myAPI.renamePreset(oldName, newName)
-
-    // Update lastAppliedPreset if the renamed preset was the current one
     if (lastAppliedPreset.value === oldName) {
       lastAppliedPreset.value = newName
       await window.myAPI.setLastAppliedPreset(newName)
     }
-
     await loadPresets()
     cancelRename()
   } catch (error) {
@@ -719,19 +645,82 @@ async function confirmRename(oldName) {
   }
 }
 
-const appVersion = ref('')
-const updateMessage = ref('')
-const updateAvailable = ref(false)
-const updateReady = ref(false)
-const downloadPercent = ref(0)
-const showUpdateUI = ref(false)
+// ========== View Toggles ==========
+async function updateViewVisibility(index, event) {
+  allViews[index].visible = event.target.checked
+  setSettings({ ...settings, views: [...allViews] })
+}
 
+async function onToggleView(index, event) {
+  tempUpdatedViews.value[index].visible = event.target.checked
+}
+
+// ========== Cache & Path ==========
+async function clearInput() {
+  try {
+    await window.myAPI.clearDataCache()
+  } catch (err) {
+    window.myAPI.logError(`Failed to clear data: ${err.message}`)
+  }
+}
+
+async function applySavePath() {
+  try {
+    const pathToApply = settings.savePath.trim()
+    await window.myAPI.setCustomSavePath(pathToApply)
+  } catch (err) {
+    window.myAPI.logError(`Error updating save path: ${err.message}`)
+  }
+}
+
+watch(
+  () => settings.savePath,
+  async () => {
+    if (settings.savePath.trim() === '') {
+      await window.myAPI.setCustomSavePath('')
+    }
+  },
+)
+
+// ========== Updates ==========
+async function checkForUpdateAuto() {
+  const result = await window.myAPI.checkForUpdate()
+  if (result?.error) {
+    console.error('Auto update check error:', result.error)
+    window.myAPI.logError('Auto update check error:', result.error)
+  }
+}
+
+async function checkForUpdate() {
+  showUpdateUI.value = true
+  updateMessage.value = '🔍 Checking for updates...'
+  const result = await window.myAPI.checkForUpdate()
+  if (result?.error) {
+    updateMessage.value = 'Failed to check for updates.'
+    window.myAPI.logError('Update check error:', result.error)
+  }
+}
+
+async function downloadUpdate() {
+  updateMessage.value = '⬇Downloading update...'
+  const result = await window.myAPI.downloadUpdate()
+  if (result?.error) {
+    updateMessage.value = 'Failed to download update.'
+    window.myAPI.logError('Download update error:', result.error)
+  }
+}
+
+function installUpdate() {
+  window.myAPI.installUpdate()
+}
+
+// ========== Lifecycle ==========
 onMounted(async () => {
   await loadPresets()
+
   try {
     const lastPreset = await window.myAPI.getLastAppliedPreset()
     lastAppliedPreset.value = lastPreset || ''
-
     if (lastAppliedPreset.value && presets.value[lastAppliedPreset.value]) {
       await applyPreset(lastAppliedPreset.value)
     }
@@ -745,21 +734,16 @@ onMounted(async () => {
   }
 
   appVersion.value = await window.myAPI.getAppVersion()
-
-  // Check for updates automatically in background
   checkForUpdateAuto()
 
   window.myAPI.onUpdateAvailable(() => {
     updateMessage.value = 'New update available. Click to download.'
     updateAvailable.value = true
-    showUpdateUI.value = true // Show UI when update is found automatically
+    showUpdateUI.value = true
   })
 
   window.myAPI.onUpdateNotAvailable(() => {
-    // Only update message if UI is already shown (from manual check)
-    if (showUpdateUI.value) {
-      updateMessage.value = 'You are using the latest version.'
-    }
+    if (showUpdateUI.value) updateMessage.value = 'You are using the latest version.'
     updateAvailable.value = false
   })
 
@@ -775,37 +759,4 @@ onMounted(async () => {
     showUpdateUI.value = true
   })
 })
-
-async function checkForUpdateAuto() {
-  const result = await window.myAPI.checkForUpdate()
-  if (result?.error) {
-    console.error('Auto update check error:', result.error)
-    window.myAPI.logError('Auto update check error:', result.error)
-  }
-}
-
-async function checkForUpdate() {
-  showUpdateUI.value = true
-  updateMessage.value = '🔍 Checking for updates...'
-  const result = await window.myAPI.checkForUpdate()
-  if (result?.error) {
-    console.error('Update check error:', result.error)
-    updateMessage.value = 'Failed to check for updates.'
-    window.myAPI.logError('Update check error:', result.error)
-  }
-}
-
-async function downloadUpdate() {
-  updateMessage.value = '⬇Downloading update...'
-  const result = await window.myAPI.downloadUpdate()
-  if (result?.error) {
-    console.error('Download update error:', result.error)
-    updateMessage.value = 'Failed to download update.'
-    window.myAPI.logError('Download update error:', result.error)
-  }
-}
-
-function installUpdate() {
-  window.myAPI.installUpdate()
-}
 </script>

@@ -4,77 +4,30 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import Store from 'electron-store'
-import pkg from 'electron-updater';
+import pkg from 'electron-updater'
 
-
-const { autoUpdater } = pkg;
+// ======================
+// Constants & Initial Setup
+// ======================
+const { autoUpdater } = pkg
 const store = new Store()
-/*
-
-In CommonJS, we have __dirname by default.
-But in ES modules, we don’t. So we recreate it manually using this pattern:
-
-*/
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-/*
-
-console.log(import.meta.url) ➜ 'file:///home/anas/projects/myApp/utils/test.js'
-
-const filePath = fileURLToPath(import.meta.url);
-console.log(filePath) ➜ '/home/anas/projects/myApp/utils/test.js'
-
-const dirPath = path.dirname('/home/anas/projects/myApp/utils/test.js');
-console.log(dirPath) ➜ '/home/anas/projects/myApp/utils'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-console.log(__dirname) ➜ '/home/anas/projects/myApp/utils'
-
-*/
-
-/*
-
-Why we Use path.join?
-
-1 - It automatically handles slashes (/ or \)
-
-2 - Works on Windows, Linux, macOS
-
-3 - Clean and readable code
-
-const fullPath = path.join('src', 'components', 'App.js');
-console.log(fullPath); ➜ src/components/App.js
-
-const jsonPath = path.join(__dirname, 'data', 'info.json');
-console.log(jsonPath); ➜ /home/anas/projects/myApp/utils/data/info.json
-
-*/
-
+// ======================
+// Global Variables
+// ======================
 let mainWindow
+let customSavePath = store.get('customSavePath') || app.getPath('userData')
+let jsonFolderPath
 
-
-let customSavePath = store.get('customSavePath')
-if (!customSavePath || typeof customSavePath !== 'string' || customSavePath.trim() === '') {
-  customSavePath = app.getPath('userData')
-}
-
-ipcMain.handle('get-default-save-path', () => {
-  return customSavePath
-})
-
-
-console.log('Using save path:', customSavePath)
+// ======================
+// Path Configuration
+// ======================
 const logFilePath = path.join(customSavePath, 'errors.log')
 
-
-
-function appendToLog(message) {
-  const logMessage = `[${new Date().toISOString()}] ${message}\n`
-  fs.appendFileSync(logFilePath, logMessage)
-}
-
-
-
+// ======================
+// File System Utilities
+// ======================
 function ensureLogExist(folderPath) {
   const logFile = path.join(folderPath, 'errors.log')
   if (!fs.existsSync(logFile)) {
@@ -82,30 +35,12 @@ function ensureLogExist(folderPath) {
   }
 }
 
-ensureLogExist(customSavePath)
-
-
-let jsonFolderPath
-let playerImageFolder
-let matchImageFolder
-let teamsImageFolder
-
 function ensureFoldersExist(basePath) {
   jsonFolderPath = path.join(basePath, 'jsons')
-  const imagesFolder = path.join(basePath, 'images')
-  playerImageFolder = path.join(imagesFolder, 'players-images')
-  matchImageFolder = path.join(imagesFolder, 'matches-images')
-  teamsImageFolder = path.join(imagesFolder, 'brackets-images')
-
-  for (const folder of [jsonFolderPath, playerImageFolder, matchImageFolder, teamsImageFolder,]) {
-    if (!fs.existsSync(folder)) {
-      fs.mkdirSync(folder, { recursive: true })
-    }
+  if (!fs.existsSync(jsonFolderPath)) {
+    fs.mkdirSync(jsonFolderPath, { recursive: true })
   }
 }
-
-ensureFoldersExist(customSavePath)
-
 
 function getFilePaths() {
   return {
@@ -115,12 +50,23 @@ function getFilePaths() {
   }
 }
 
+function appendToLog(message) {
+  const logMessage = `[${new Date().toISOString()}] ${message}\n`
+  fs.appendFileSync(logFilePath, logMessage)
+}
+
+// Initialize file system structure
+ensureFoldersExist(customSavePath)
+ensureLogExist(customSavePath)
+
+// ======================
+// Window Management
+// ======================
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 600,
     autoHideMenuBar: true,
-
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -135,12 +81,14 @@ function createWindow() {
   }
 }
 
+// ======================
+// IPC Handlers - Path Management
+// ======================
+ipcMain.handle('get-default-save-path', () => customSavePath)
 
 ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
   try {
-    if (!newPath || typeof newPath !== 'string' || newPath.trim() === '') {
-      newPath = app.getPath('userData')
-    }
+    newPath = newPath?.trim() ? newPath : app.getPath('userData')
 
     if (!fs.existsSync(newPath)) {
       fs.mkdirSync(newPath, { recursive: true })
@@ -158,6 +106,11 @@ ipcMain.handle('set-custom-save-path', async (_event, newPath) => {
   }
 })
 
+// ======================
+// IPC Handlers - Data Persistence
+// ======================
+
+// Teams Data
 ipcMain.handle('load-teams-cache', () => store.get('teamsCache'))
 ipcMain.handle('save-teams-cache', (_event, data) => {
   store.set('teamsCache', JSON.parse(data))
@@ -167,46 +120,7 @@ ipcMain.handle('save-teams-cache', (_event, data) => {
 ipcMain.handle('save-teams', async (_event, data) => {
   try {
     const { teamsFilePath } = getFilePaths()
-    const teams = JSON.parse(data)
-
-    for (const team of teams) {
-      for (const field of ['teamImage', 'teamFlag']) {
-        if (team[field] && team[field].startsWith('data:image')) {
-          //  data:image/png;base64,xxxxxxx
-
-          const ext = team[field].substring(
-            team[field].indexOf('/') + 1,
-            team[field].indexOf(';')
-          )
-          // Extract the image extension (like png, jpeg):
-          const base64Data = team[field].split(',')[1]
-          // "data:image/jpeg;base64,xxxxxxxxxxxx"
-
-          const filename = `team-${Date.now()}-${field.replace(/\s/g, '')}.${ext}`
-          // Generate a unique filename:
-          const filePath = path.join(teamsImageFolder, filename)
-          // Join folder + filename to get full image path:
-          // '/home/anas/projects/teamImages/team-1717840234000-TeamImage.jpeg'
-
-          fs.writeFileSync(filePath, base64Data, 'base64')
-          // Write the base64 image to a file:
-          // Creates a real image file on disk from the base64 string.
-          // 'base64' means it decodes the string before saving.
-
-          team[field] = filePath
-          /*
-          So now instead of:
-          "Team Image": "data:image/jpeg;base64,..."
-          It becomes:
-          "Team Image": "/home/anas/projects/teamImages/team-1717840234000-TeamImage.jpeg"
-          */
-        }
-      }
-    }
-    /*
-
-    */
-    fs.writeFileSync(teamsFilePath, JSON.stringify(teams, null, 2), 'utf-8')
+    fs.writeFileSync(teamsFilePath, JSON.stringify(JSON.parse(data), null, 2), 'utf-8')
     return { success: true }
   } catch (error) {
     console.error('Error saving teams:', error)
@@ -214,6 +128,7 @@ ipcMain.handle('save-teams', async (_event, data) => {
   }
 })
 
+// Players Data
 ipcMain.handle('load-player-cache', () => store.get('playerCache'))
 ipcMain.handle('save-player-cache', (_event, data) => {
   store.set('playerCache', JSON.parse(data))
@@ -223,20 +138,7 @@ ipcMain.handle('save-player-cache', (_event, data) => {
 ipcMain.handle('save-player', async (_event, data) => {
   try {
     const { playersFilePath } = getFilePaths()
-    const player = JSON.parse(data)
-    if (player.heroImage && player.heroImage.startsWith('data:image')) {
-      const ext = player.heroImage.substring(
-        player.heroImage.indexOf('/') + 1,
-        player.heroImage.indexOf(';')
-      )
-      const base64Data = player.heroImage.split(',')[1]
-      const filename = `hero-${Date.now()}.${ext}`
-      const filePath = path.join(playerImageFolder, filename)
-      fs.writeFileSync(filePath, base64Data, 'base64')
-      player.heroImage = filePath
-    }
-
-    fs.writeFileSync(playersFilePath, JSON.stringify(player, null, 2), 'utf-8')
+    fs.writeFileSync(playersFilePath, JSON.stringify(JSON.parse(data), null, 2), 'utf-8')
     return { success: true }
   } catch (error) {
     console.error('Error saving players:', error)
@@ -244,37 +146,20 @@ ipcMain.handle('save-player', async (_event, data) => {
   }
 })
 
+// Matches Data
 ipcMain.handle('load-matches-cache', () => store.get('matchesCache'))
 ipcMain.handle('save-matches-cache', (_event, data) => {
   store.set('matchesCache', JSON.parse(data))
   return true
 })
 
-
 ipcMain.handle('save-matches', async (_event, data) => {
   try {
     const { matchesFilePath } = getFilePaths()
     const parsed = JSON.parse(data)
-
     const processedMatches = parsed.matches.map(matchObj => {
       const matchKey = Object.keys(matchObj)[0]
-      const match = matchObj[matchKey]
-
-      for (const field of ['leftTeamLogo', 'rightTeamLogo', 'leftTeamFlag', 'rightTeamFlag']) {
-        if (match[field] && match[field].startsWith('data:image')) {
-          const ext = match[field].substring(
-            match[field].indexOf('/') + 1,
-            match[field].indexOf(';')
-          )
-          const base64Data = match[field].split(',')[1]
-          const filename = `match-${Date.now()}-${field.replace(/\s/g, '')}.${ext}`
-          const filePath = path.join(matchImageFolder, filename)
-          fs.writeFileSync(filePath, base64Data, 'base64')
-          match[field] = filePath
-        }
-      }
-
-      return { [matchKey]: match }
+      return { [matchKey]: matchObj[matchKey] }
     })
 
     fs.writeFileSync(
@@ -282,7 +167,6 @@ ipcMain.handle('save-matches', async (_event, data) => {
       JSON.stringify({ info: parsed.info, matches: processedMatches }, null, 2),
       'utf-8'
     )
-
     return { success: true }
   } catch (error) {
     console.error('Error saving matches:', error)
@@ -290,7 +174,9 @@ ipcMain.handle('save-matches', async (_event, data) => {
   }
 })
 
-
+// ======================
+// IPC Handlers - Settings & Presets
+// ======================
 ipcMain.handle('save-settings-cache', async (_event, data) => {
   try {
     store.set('settingsCache', data)
@@ -301,42 +187,18 @@ ipcMain.handle('save-settings-cache', async (_event, data) => {
   }
 })
 
+ipcMain.handle('get-settings-cache', async () => store.get('settingsCache'))
 
 ipcMain.handle('set-last-preset', (_, name) => {
   store.set('lastAppliedPreset', name)
   return true
 })
 
-ipcMain.handle('get-last-preset', () => {
-  return store.get('lastAppliedPreset', '') // '' is the default if key doesn't exist
-})
+ipcMain.handle('get-last-preset', () => store.get('lastAppliedPreset', ''))
 
-ipcMain.handle('get-settings-cache', async () => store.get('settingsCache'))
+ipcMain.handle('get-presets', async () => store.get('presets', {}))
 
-ipcMain.handle('clear-data-cache', async () => {
-  try {
-    store.delete('teamsCache')
-    store.delete('playerCache')
-    store.delete('matchesCache')
-    store.delete('settingsCache')
-    store.delete('customSavePath')
-    return { success: true }
-  } catch (error) {
-    console.error('Error clearing cache:', error)
-    return { success: false, error: error.message }
-  }
-})
-
-ipcMain.handle('get-presets', async () => {
-  try {
-    return store.get('presets', {})
-  } catch (error) {
-    console.error('Error getting presets:', error)
-    return {}
-  }
-})
-
-ipcMain.handle('save-preset', async (event, { name, views }) => {
+ipcMain.handle('save-preset', async (_, { name, views }) => {
   try {
     const presets = store.get('presets', {})
     presets[name] = views
@@ -348,7 +210,7 @@ ipcMain.handle('save-preset', async (event, { name, views }) => {
   }
 })
 
-ipcMain.handle('delete-preset', async (event, name) => {
+ipcMain.handle('delete-preset', async (_, name) => {
   try {
     const presets = store.get('presets', {})
     delete presets[name]
@@ -359,105 +221,92 @@ ipcMain.handle('delete-preset', async (event, name) => {
     return false
   }
 })
-ipcMain.handle('rename-preset', async (event, oldName, newName) => {
+
+ipcMain.handle('rename-preset', async (_, oldName, newName) => {
   try {
-    const presets = store.get('presets', {});
+    const presets = store.get('presets', {})
     if (presets[oldName]) {
-      // Create a new object with the renamed property in the same position
-      const newPresets = {};
+      const newPresets = {}
       for (const [key, value] of Object.entries(presets)) {
-        if (key === oldName) {
-          newPresets[newName] = presets[oldName];
-        } else {
-          newPresets[key] = value;
-        }
+        newPresets[key === oldName ? newName : key] = value
       }
-      store.set('presets', newPresets);
+      store.set('presets', newPresets)
     }
-    return true;
+    return true
   } catch (err) {
-    console.error('Error renaming preset:', err);
-    return false;
+    console.error('Error renaming preset:', err)
+    return false
   }
-});
+})
 
-
-
-
-
+// ======================
+// IPC Handlers - File Dialogs
+// ======================
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory']
-  });
-  return result.canceled ? null : result.filePaths[0];
-});
-
-
-
-
+  })
+  return result.canceled ? null : result.filePaths[0]
+})
 
 ipcMain.handle('dialog:openFile', async (_, options) => {
   const result = await dialog.showOpenDialog({
     properties: ['openFile'],
     filters: options.filters
-  });
-  return result;
-});
+  })
+  return result
+})
 
 ipcMain.handle('file:read', async (_, path) => {
-  return fs.promises.readFile(path);
-});
+  return fs.promises.readFile(path)
+})
 
 ipcMain.on('dialog:error', (_, message) => {
-  dialog.showErrorBox('Error', message);
-});
+  dialog.showErrorBox('Error', message)
+})
 
-
-
-
-
+// ======================
+// IPC Handlers - App Management
+// ======================
+ipcMain.handle('clear-data-cache', async () => {
+  try {
+    ['teamsCache', 'playerCache', 'matchesCache', 'settingsCache', 'customSavePath']
+      .forEach(key => store.delete(key))
+    return { success: true }
+  } catch (error) {
+    console.error('Error clearing cache:', error)
+    return { success: false, error: error.message }
+  }
+})
 
 ipcMain.handle('get-app-version', () => app.getVersion())
 
+// ======================
+// Auto Update Functionality
+// ======================
+autoUpdater.autoDownload = false
 
-
-
-
-
-autoUpdater.autoDownload = false // Manual control
-
+// Update event handlers
 autoUpdater.on('update-available', () => {
-  if (mainWindow?.webContents) {
-    mainWindow.webContents.send('update_available')
-  } else {
-    console.error('Update check error: mainWindow is not ready (update-available)')
-  }
+  mainWindow?.webContents?.send('update_available') ||
+    console.error('Update check error: mainWindow is not ready')
 })
 
 autoUpdater.on('update-not-available', () => {
-  if (mainWindow?.webContents) {
-    mainWindow.webContents.send('update_not_available')
-  } else {
-    console.error('Update check error: mainWindow is not ready (update-not-available)')
-  }
+  mainWindow?.webContents?.send('update_not_available') ||
+    console.error('Update check error: mainWindow is not ready')
 })
 
 autoUpdater.on('update-downloaded', () => {
-  if (mainWindow?.webContents) {
-    mainWindow.webContents.send('update_downloaded')
-  } else {
-    console.error('Update check error: mainWindow is not ready (update-downloaded)')
-  }
+  mainWindow?.webContents?.send('update_downloaded') ||
+    console.error('Update check error: mainWindow is not ready')
 })
 
 autoUpdater.on('download-progress', (progressObj) => {
-  const percentage = Math.round(progressObj.percent)
-  mainWindow.webContents.send('update-download-progress', percentage)
+  mainWindow?.webContents?.send('update-download-progress', Math.round(progressObj.percent))
 })
 
-
-
-
+// Update IPC handlers
 ipcMain.handle('check-for-update', async () => {
   try {
     await autoUpdater.checkForUpdates()
@@ -476,21 +325,12 @@ ipcMain.handle('download-update', async () => {
   }
 })
 
-ipcMain.on('quit-and-install', () => {
-  autoUpdater.quitAndInstall()
-})
+ipcMain.on('quit-and-install', () => autoUpdater.quitAndInstall())
 
-
-
-
-
-
-
-
-ipcMain.on('log-error', (_event, message) => {
-  appendToLog(message)
-})
-
+// ======================
+// Error Handling
+// ======================
+ipcMain.on('log-error', (_event, message) => appendToLog(message))
 
 process.on('uncaughtException', (err) => {
   appendToLog(`Uncaught Exception: ${err.stack || err.message}`)
@@ -500,8 +340,9 @@ process.on('unhandledRejection', (reason) => {
   appendToLog(`Unhandled Rejection: ${reason}`)
 })
 
-
-
+// ======================
+// App Lifecycle
+// ======================
 app.whenReady()
   .then(() => {
     console.log('App is ready')

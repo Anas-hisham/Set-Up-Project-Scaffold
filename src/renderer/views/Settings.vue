@@ -1,425 +1,110 @@
 <template>
   <div
     :class="[
-      'mt-10 p-6 text-white min-h-screen transition-colors duration-500',
+      'mt-12 text-white min-h-screen transition-colors duration-500',
       settings.displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-white text-gray-900',
     ]"
   >
-    <h2
+    <h1
       :class="[
-        'text-3xl font-extrabold text-center mb-10',
+        'text-4xl font-bold text-center',
         settings.displayMode === 'light' ? 'text-black' : 'text-white',
       ]"
     >
       Settings
-    </h2>
+    </h1>
 
-    <div class="my-12 text-center border-gray-300 dark:border-gray-700 pt-8 px-4">
-      <p
-        :class="settings.displayMode === 'dark' ? 'text-gray-200' : 'text-gray-800'"
-        class="text-lg font-medium"
-      >
-        Version: {{ appVersion }}
-      </p>
-
-      <button
-        v-if="!updateAvailable"
-        @click="checkForUpdate"
-        class="mt-4 bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white px-5 py-2.5 rounded shadow-md"
-      >
-        Check for Update
-      </button>
-
-      <!-- Only show update UI if either manually checked or update is available -->
-      <div v-if="showUpdateUI">
-        <div v-if="updateAvailable" class="mt-4">
-          <button
-            @click="downloadUpdate"
-            class="bg-green-600 hover:bg-green-700 transition-colors duration-200 text-white px-5 py-2.5 rounded shadow-md"
-          >
-            Download Update
-          </button>
-        </div>
-
-        <p
-          class="mt-5 text-sm"
-          :class="settings.displayMode === 'dark' ? 'text-blue-300' : 'text-blue-700'"
-        >
-          {{ updateMessage }}
-        </p>
-
-        <!-- Optional progress bar -->
-        <div
-          v-if="downloadPercent > 0 && downloadPercent < 100"
-          class="w-full max-w-lg mx-auto bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden mt-4"
-        >
-          <div
-            class="bg-blue-500 h-3 transition-all duration-300"
-            :style="{ width: downloadPercent + '%' }"
-          ></div>
-        </div>
-
-        <div v-if="updateReady" class="mt-6">
-          <button
-            @click="installUpdate"
-            class="bg-yellow-400 hover:bg-yellow-500 transition-colors duration-200 text-black font-semibold px-6 py-2.5 rounded shadow-md"
-          >
-            Restart & Install
-          </button>
-        </div>
-      </div>
-    </div>
+    <VersionInfo
+      :appVersion="appVersion"
+      :displayMode="settings.displayMode"
+      :updateAvailable="updateAvailable"
+      :showUpdateUI="showUpdateUI"
+      :updateMessage="updateMessage"
+      :downloadPercent="downloadPercent"
+      :updateReady="updateReady"
+      :onCheckForUpdate="checkForUpdate"
+      :onDownloadUpdate="downloadUpdate"
+      :onInstallUpdate="installUpdate"
+    />
 
     <div class="grid md:grid-cols-2 gap-6">
       <!-- Display Mode -->
-      <div>
-        <label
-          :class="[
-            'block text-sm font-semibold mb-1',
-            settings.displayMode === 'light' ? 'text-black' : 'text-white',
-          ]"
-        >
-          Display Mode
-        </label>
-        <select
-          v-model="settings.displayMode"
-          class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400"
-          :class="
-            settings.displayMode === 'dark'
-              ? 'bg-gray-900 text-white border-gray-600'
-              : 'bg-white text-gray-900 border-gray-300'
-          "
-        >
-          <option value="light">☀️ Light</option>
-          <option value="dark">🌙 Dark</option>
-        </select>
-      </div>
-
-      <!-- Navigation Mode -->
-      <div>
-        <label
-          :class="[
-            'block text-sm font-semibold mb-1',
-            settings.displayMode === 'light' ? 'text-black' : 'text-white',
-          ]"
-        >
-          Navigation Mode
-        </label>
-        <select
-          v-model="settings.navMode"
-          class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400"
-          :class="
-            settings.displayMode === 'dark'
-              ? 'bg-gray-900 text-white border-gray-600'
-              : 'bg-white text-gray-900 border-gray-300'
-          "
-        >
-          <option value="full">Full</option>
-          <option value="mini">Mini</option>
-        </select>
-      </div>
-
-      <!-- Save Path -->
-      <div class="md:col-span-2 flex items-center gap-4 justify-center">
-        <div class="flex-grow">
-          <input
-            v-model="settings.savePath"
-            type="text"
-            :placeholder="folderPath.value ? folderPath.value : settings.savePath"
-            class="w-full p-2 rounded border"
-            :class="
-              settings.displayMode === 'dark'
-                ? 'bg-gray-900 text-white border-gray-600'
-                : 'bg-white text-gray-900 border-gray-300'
-            "
-          />
-        </div>
-        <button
-          class="font-bold px-4 py-2"
-          :class="[settings.displayMode === 'dark' ? 'text-white' : 'text-black']"
-          @click="selectFolder"
-        >
-          Select Folder
-        </button>
-        <button
-          @click="applySavePath"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded shadow transition"
-        >
-          Apply Path
-        </button>
-      </div>
-      <div></div>
+      <DisplayModeSelector :settings="settings" :isDark="settings.displayMode === 'dark'" />
+      <NavigationModeSelector :settings="settings" :isDark="settings.displayMode === 'dark'" />
+      <SavePathInput
+        :settings="settings"
+        :folderPath="folderPath"
+        :selectFolder="selectFolder"
+        :applySavePath="applySavePath"
+        :isDark="settings.displayMode === 'dark'"
+      />
     </div>
     <!-- Action Buttons -->
-    <div class="flex flex-wrap justify-between gap-4 my-6">
-      <button
-        @click="resetSettings"
-        class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-4 py-2 rounded shadow transition"
-      >
-        Reset to Defaults
-      </button>
-      <button
-        @click="clearInput"
-        class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded shadow transition"
-      >
-        Clear Input Data
-      </button>
-    </div>
+    <ActionButtons :onReset="resetSettings" :onClear="clearInput" />
     <!-- Manage Views -->
-    <div class="mt-8">
-      <h3
-        :class="[
-          'text-xl font-bold mb-4',
-          settings.displayMode === 'light' ? 'text-black' : 'text-white',
-        ]"
-      >
-        Manage Views
-      </h3>
-      <div class="bg-opacity-50 py-4 rounded">
-        <div
-          v-for="(view, index) in withoutSettings()"
-          :key="index"
-          class="flex items-center justify-between py-4 border-b"
-          :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-300'"
-        >
-          <span
-            :class="['font-medium', settings.displayMode === 'light' ? 'text-black' : 'text-white']"
-          >
-            {{ view.title }}
-          </span>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              :checked="view.visible"
-              @change="updateViewVisibility(index, $event)"
-              class="sr-only peer"
-            />
+    <ManageViews
+      :views="withoutSettings()"
+      :displayMode="settings.displayMode"
+      :onViewVisibilityChange="updateViewVisibility"
+    />
 
-            <div
-              class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"
-              :class="
-                settings.displayMode === 'dark'
-                  ? 'peer-checked:bg-blue-600 bg-gray-700'
-                  : 'peer-checked:bg-blue-500 bg-gray-300'
-              "
-            ></div>
-          </label>
-        </div>
-      </div>
-    </div>
-    <div
-      v-if="lastAppliedPreset"
-      class="text-sm mb-2"
-      :class="settings.displayMode === 'light' ? 'text-gray-600' : 'text-gray-300'"
-    >
-      Currently applied preset: <span class="font-semibold">{{ lastAppliedPreset }}</span>
-    </div>
+    <AppliedPresetIndicator :preset="lastAppliedPreset" :displayMode="settings.displayMode" />
+
     <!-- Manage Presets -->
-    <div class="mt-8">
-      <h3
-        :class="[
-          'text-xl font-bold mb-4',
-          settings.displayMode === 'light' ? 'text-black' : 'text-white',
-        ]"
-      >
-        Manage Presets
-      </h3>
-
-      <div class="flex gap-2 mb-4">
-        <input
-          v-model="newPresetName"
-          type="text"
-          placeholder="New preset name"
-          class="flex-grow p-2 rounded border"
-          :class="
-            settings.displayMode === 'dark'
-              ? 'bg-gray-900 text-white border-gray-600'
-              : 'bg-white text-gray-900 border-gray-300'
-          "
-        />
-        <button
-          @click="handleSavePreset"
-          class="bg-green-600 hover:bg-green-700 text-white font-bold px-4 py-2 rounded shadow transition"
-        >
-          Save Current
-        </button>
-      </div>
-      <div class="py-6 pb-2 space-y-4">
-        <div
-          v-for="(preset, index) in presetList"
-          :key="index"
-          class="border-b pb-4 last:border-none"
-          :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-200'"
-        >
-          <!-- Preset name and action buttons -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <template v-if="editingName === preset.name">
-                <input
-                  v-model="editedPresetName"
-                  class="p-1 rounded border text-sm"
-                  :class="
-                    settings.displayMode === 'dark'
-                      ? 'bg-gray-900 text-white border-gray-600'
-                      : 'bg-white text-gray-900 border-gray-300'
-                  "
-                />
-                <button
-                  @click="confirmRename(preset.name)"
-                  class="text-sm text-green-600 font-semibold"
-                >
-                  ✔️
-                </button>
-                <button @click="cancelRename" class="text-sm text-red-600 font-semibold">❌</button>
-              </template>
-              <template v-else>
-                <button
-                  @click="applyCurrentPreset(preset.name)"
-                  class="px-3 py-1 rounded font-medium transition bg-orange-500 hover:bg-orange-600 text-white text-sm shadow"
-                >
-                  {{ preset.name }}
-                </button>
-              </template>
-            </div>
-
-            <!-- Control buttons including Save/Cancel if updating -->
-            <div class="flex gap-2">
-              <button
-                @click="startRenaming(preset.name)"
-                class="text-sm px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white shadow"
-              >
-                Edit
-              </button>
-
-              <template v-if="updatingPreset === preset.name">
-                <button
-                  @click="confirmUpdatePreset(preset.name)"
-                  class="text-sm px-2 py-1 rounded bg-green-600 hover:bg-green-700 text-white shadow"
-                >
-                  Save
-                </button>
-                <button
-                  @click="cancelUpdatePreset"
-                  class="text-sm px-2 py-1 rounded bg-gray-500 hover:bg-gray-600 text-white shadow"
-                >
-                  Cancel
-                </button>
-              </template>
-              <template v-else>
-                <button
-                  @click="startUpdatingPreset(preset)"
-                  class="text-sm px-2 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white shadow"
-                >
-                  Update
-                </button>
-              </template>
-
-              <button
-                @click="deletePreset(preset.name, index)"
-                class="text-sm px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white shadow"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-
-          <!-- Toggle switches shown only during update -->
-          <div
-            v-if="updatingPreset === preset.name"
-            class="mt-4 pl-2 space-y-2 border-l-2"
-            :class="settings.displayMode === 'dark' ? 'border-gray-700' : 'border-gray-300'"
-          >
-            <template v-for="(view, i) in tempUpdatedViews" :key="i">
-              <div v-if="view.title !== 'Settings'" class="flex items-center justify-between">
-                <span
-                  :class="[
-                    'font-medium',
-                    settings.displayMode === 'light' ? 'text-black' : 'text-white',
-                  ]"
-                >
-                  {{ view.title }}
-                </span>
-                <input
-                  type="checkbox"
-                  :checked="view.visible"
-                  class="w-5 h-5"
-                  @change="onToggleView(i, $event)"
-                />
-              </div>
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PresetManager
+      :displayMode="settings.displayMode"
+      :newPresetName="newPresetName"
+      :presetList="presetList"
+      :editingName="editingName"
+      :editedPresetName="editedPresetName"
+      :updatingPreset="updatingPreset"
+      :tempUpdatedViews="tempUpdatedViews"
+      :onNewPresetNameChange="(value) => (newPresetName = value)"
+      :onSavePreset="handleSavePreset"
+      :onApplyPreset="applyCurrentPreset"
+      :onStartRenaming="startRenaming"
+      :onConfirmRename="confirmRename"
+      :onCancelRename="cancelRename"
+      :onStartUpdatingPreset="startUpdatingPreset"
+      :onConfirmUpdatePreset="confirmUpdatePreset"
+      :onCancelUpdatePreset="cancelUpdatePreset"
+      :onDeletePreset="deletePreset"
+      :onToggleView="onToggleView"
+      :onEditedPresetNameChange="(value) => (editedPresetName = value)"
+    />
   </div>
 
-  <div
-    v-if="alert.showAlert"
-    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-    @click.self="closeAlert"
-  >
-    <div
-      class="relative p-6 rounded shadow-lg w-100 text-center"
-      :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
-    >
-      <!-- Close Button -->
-      <button
-        @click="closeAlert"
-        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
-      >
-        ×
-      </button>
+  <AlertDialog
+    :showAlert="alert.showAlert"
+    :text="alert.text"
+    :displayMode="settings.displayMode"
+    :onClose="closeAlert"
+  />
 
-      <p class="mb-4">{{ alert.text }}</p>
-
-      <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-        @click="closeAlert"
-      >
-        OK
-      </button>
-    </div>
-  </div>
-
-  <div
-    v-if="confirmDialog.show"
-    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-    @click.self="handleCancel()"
-  >
-    <div
-      class="relative p-6 rounded shadow-lg w-100 text-center"
-      :class="[settings.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
-    >
-      <button
-        @click="handleCancel()"
-        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
-      >
-        ×
-      </button>
-
-      <p class="mb-4">{{ confirmDialog.message }}</p>
-
-      <div class="flex justify-around gap-2">
-        <button
-          class="flex-1 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
-          @click="handleConfirm(false)"
-        >
-          Create New Presist
-        </button>
-        <button
-          class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-          @click="handleConfirm(true)"
-        >
-          Update
-        </button>
-      </div>
-    </div>
-  </div>
+  <ConfirmDialog
+    :show="confirmDialog.show"
+    :message="confirmDialog.message"
+    :displayMode="settings.displayMode"
+    :onCancel="handleCancel"
+    :onConfirm="handleConfirm"
+  />
 </template>
 <script setup>
+// ================== Imports ==================
 import { ref, onMounted, computed, watch, reactive } from 'vue'
 
-// ========== Props ==========
+import DisplayModeSelector from '../components/settings/DisplayModeSelector.vue'
+import NavigationModeSelector from '../components/settings/NavigationModeSelector.vue'
+import SavePathInput from '../components/settings/SavePathInput.vue'
+import AlertDialog from '../components/settings/AlertDialog.vue'
+import ConfirmDialog from '../components/settings/ConfirmDialog.vue'
+import ManageViews from '../components/settings/ManageViews.vue'
+import ActionButtons from '../components/settings/ActionButtons.vue'
+import VersionInfo from '../components/settings/VersionInfo.vue'
+import AppliedPresetIndicator from '../components/settings/AppliedPresetIndicator.vue'
+import PresetManager from '../components/settings/PresetManager.vue'
+
+// ================== Props ==================
 const { settings, allViews, setSettings, resetSettings, displayMode } = defineProps({
   settings: Object,
   allViews: Array,
@@ -428,7 +113,7 @@ const { settings, allViews, setSettings, resetSettings, displayMode } = definePr
   displayMode: String,
 })
 
-// ========== Refs & Reactive State ==========
+// ================== State ==================
 const alert = reactive({ showAlert: false, text: '' })
 const confirmDialog = reactive({ show: false, message: '', resolve: null })
 const folderPath = ref('')
@@ -448,7 +133,7 @@ const updateReady = ref(false)
 const downloadPercent = ref(0)
 const showUpdateUI = ref(false)
 
-// ========== Alert & Confirmation ==========
+// ================== Alert & Confirm ==================
 function showAlert(text) {
   alert.text = text
   alert.showAlert = true
@@ -477,7 +162,8 @@ function handleConfirm(result) {
   }
 }
 
-// ========== Folder Selection ==========
+// ================== Folder Selection ==================
+
 const selectFolder = async () => {
   const path = await window.myAPI.selectFolder()
   if (path) {
@@ -486,7 +172,7 @@ const selectFolder = async () => {
   }
 }
 
-// ========== Preset Management ==========
+// ================== Preset Management ==================
 const presetList = computed(() =>
   Object.entries(presets.value).map(([name, views]) => ({ name, views })),
 )
@@ -516,8 +202,8 @@ async function loadPresets() {
     if (lastAppliedPreset.value && !presets.value[lastAppliedPreset.value]) {
       lastAppliedPreset.value = null
       await window.myAPI.setLastAppliedPreset('')
-          const allVisibleViews = allViews.map(view => ({ ...view, visible: true }))
-    setSettings({ ...settings, views: allVisibleViews })
+      const allVisibleViews = allViews.map((view) => ({ ...view, visible: true }))
+      setSettings({ ...settings, views: allVisibleViews })
     }
   } catch (error) {
     window.myAPI.logError('Error loading presets:', error)
@@ -585,7 +271,7 @@ async function handleSavePreset() {
   newPresetName.value = ''
 }
 
-// ========== Preset Apply & Rename ==========
+// ================== Preset Apply & Rename ==================
 async function applyCurrentPreset(presetName) {
   const preset = presets.value[presetName]
   if (!preset) return
@@ -645,7 +331,7 @@ async function confirmRename(oldName) {
   }
 }
 
-// ========== View Toggles ==========
+// ================== View Toggles ==================
 async function updateViewVisibility(index, event) {
   allViews[index].visible = event.target.checked
   setSettings({ ...settings, views: [...allViews] })
@@ -655,7 +341,7 @@ async function onToggleView(index, event) {
   tempUpdatedViews.value[index].visible = event.target.checked
 }
 
-// ========== Cache & Path ==========
+// ================== Cache & Path ==================
 async function clearInput() {
   try {
     await window.myAPI.clearDataCache()
@@ -682,7 +368,7 @@ watch(
   },
 )
 
-// ========== Updates ==========
+// ================== Updates ==================
 async function checkForUpdateAuto() {
   const result = await window.myAPI.checkForUpdate()
   if (result?.error) {
@@ -714,7 +400,7 @@ function installUpdate() {
   window.myAPI.installUpdate()
 }
 
-// ========== Lifecycle ==========
+// ================== Lifecycle ==================
 onMounted(async () => {
   await loadPresets()
 

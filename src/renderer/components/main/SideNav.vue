@@ -27,14 +27,13 @@
         </li>
       </ul>
       <div
-        class="w-full p-2 border-t absolute bottom-5"
+        class=" p-2 border-t absolute bottom-5"
         :class="displayMode === 'dark' ? 'border-gray-700' : 'border-gray-200'"
       >
         <router-link
           to="/settings"
           :class="[
-            'flex items-center p-2 rounded transition-colors',
-            navMode === 'full' ? 'justify-center' : 'justify-center',
+            'flex items-center p-2 rounded transition-colors ',
             displayMode === 'dark' ? 'text-white' : 'text-gray-900',
             $route.path === '/settings' ? 'bg-blue-600 text-white' : '',
           ]"

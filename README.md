@@ -47,3 +47,15 @@ This is a starter template for building an Electron application using Vue 3 and 
    ```bash
    npm run preview
    ```
+
+   Builds the app and packages it
+
+   ```bash
+   npm run dist
+   ```
+
+   Packages and publishes the app
+
+   ```bash
+   npm run publish
+   ```

@@ -287,10 +287,16 @@ ipcMain.handle('get-app-version', () => app.getVersion())
 autoUpdater.autoDownload = false
 
 // Update event handlers
-autoUpdater.on('update-available', () => {
-  mainWindow?.webContents?.send('update_available') ||
-    console.error('Update check error: mainWindow is not ready')
-})
+autoUpdater.on('update-available', (info) => {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    console.error('Update check error: mainWindow is not ready');
+    return;
+  }
+
+  mainWindow.webContents.send('update_available', {
+    version: info.version || info.releaseName 
+  });
+});
 
 autoUpdater.on('update-not-available', () => {
   mainWindow?.webContents?.send('update_not_available') ||

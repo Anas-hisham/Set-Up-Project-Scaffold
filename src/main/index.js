@@ -136,7 +136,6 @@ ipcMain.handle('savePlayer', async (_event, data) => {
   }
 })
 
-// Matches Data
 ipcMain.handle('loadMatchesCache', () => store.get('matchesCache'))
 ipcMain.handle('saveMatchesCache', (_event, data) => {
   store.set('matchesCache', JSON.parse(data))

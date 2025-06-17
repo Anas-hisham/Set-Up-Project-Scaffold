@@ -156,8 +156,8 @@ async function loadDataCache() {
 
     const parsedData = typeof loaded === 'string' ? JSON.parse(loaded) : loaded
 
-    if (parsedData.info) {
-      matchInfo.value.date = parsedData.info.date || ''
+  if (parsedData.info) {
+      matchInfo.value = { ...matchInfo.value, ...parsedData.info }
     }
 
     if (Array.isArray(parsedData.matches)) {
@@ -248,6 +248,7 @@ onMounted(() => {
     </h1>
 
     <div class="px-4 py-3 mb-10">
+
       <!-- Info Section -->
       <InfoSection :matchInfo="matchInfo" :displayMode="displayMode" />
 

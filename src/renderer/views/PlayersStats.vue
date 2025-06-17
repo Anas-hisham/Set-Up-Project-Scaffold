@@ -50,7 +50,6 @@ const props = defineProps({
 // ✅ Reactive State
 // ─────────────────────────────────────
 
-// Players data list
 const players = ref([
   {
     playerName: '',
@@ -64,10 +63,8 @@ const players = ref([
   },
 ])
 
-// Hero image preview URLs
 const heroImages = ref([''])
 
-// Alert box data
 const alert = reactive({
   showAlert: false,
   text: '',

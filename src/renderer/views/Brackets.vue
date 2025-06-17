@@ -49,9 +49,9 @@ const isDarkMode = computed(() => props.displayMode === 'dark')
 // ─────────────────────────────────────
 // ✅ Reactive State
 // ─────────────────────────────────────
-const teams = ref([]) // List of all teams
-const teamImages = ref([]) // Preview URLs for team images
-const teamFlags = ref([]) // Preview URLs for team flags
+const teams = ref([])
+const teamImages = ref([])
+const teamFlags = ref([])
 
 const alert = reactive({
   showAlert: false,

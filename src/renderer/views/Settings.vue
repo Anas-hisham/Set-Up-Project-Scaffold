@@ -39,9 +39,11 @@
         :isDark="settings.displayMode === 'dark'"
       />
     </div>
+
     <!-- Action Buttons -->
-    <ActionButtons :onReset="resetSettings" :onClear="clearInput" />
+    <ActionButtons :onReset="fullReset" :onClear="clearInput" />
     <!-- Manage Views -->
+
     <ManageViews
       :views="withoutSettings()"
       :displayMode="settings.displayMode"
@@ -169,6 +171,26 @@ const selectFolder = async () => {
   if (path) {
     folderPath.value = path
     settings.savePath = path
+  }
+}
+
+// ================== Reset ==================
+
+async function fullReset() {
+  try {
+    await resetSettings()
+
+    await window.myAPI.clearAllViewPresets()
+
+    lastAppliedPreset.value = null
+    newPresetName.value = ''
+    editedPresetName.value = ''
+    editingName.value = null
+    updatingPreset.value = null
+    tempUpdatedViews.value = []
+    folderPath.value = ''
+  } catch (err) {
+    console.error('Full reset failed:', err)
   }
 }
 

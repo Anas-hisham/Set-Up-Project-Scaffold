@@ -11,7 +11,7 @@
     <Welcome v-if="path === '/welcome'" :displayMode="displayMode" />
     <Brackets v-if="path === '/brackets'" :displayMode="displayMode" />
     <PlayersStats v-else-if="path === '/players'" :displayMode="displayMode" />
-    <TodayxMatches v-else-if="path === '/matches'" :displayMode="displayMode" />
+    <TodaysMatches v-else-if="path === '/matches'" :displayMode="displayMode" />
     <Settings
       v-else-if="path === '/settings'"
       :displayMode="displayMode"
@@ -27,7 +27,7 @@
 import Welcome from '../../views/Welcome.vue'
 import Brackets from '../../views/Brackets.vue'
 import PlayersStats from '../../views/PlayersStats.vue'
-import TodayxMatches from '../../views/TodaysMatches.vue'
+import TodaysMatches from '../../views/TodaysMatches.vue'
 import Settings from '../../views/Settings.vue'
 
 defineProps({

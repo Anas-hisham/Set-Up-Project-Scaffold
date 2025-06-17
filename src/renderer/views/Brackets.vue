@@ -22,48 +22,23 @@
     </div>
   </div>
 
-  <div class="flex justify-center mb-10">
-    <button
-      @click="saveTeamsToDisk"
-      class="px-6 py-3 bg-green-600 text-white  hover:bg-green-700 font-semibold"
-    >
-      Save Teams
-    </button>
-  </div>
+  <SaveButton title="Save Teams" :onClick="saveTeamsToDisk" />
 
-  <div
+  <AlertDialog
     v-if="alert.showAlert"
-    class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-    @click.self="closeAlert"
-  >
-    <div
-      class="relative p-6  shadow-lg w-80 text-center"
-      :class="[
-        props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'
-      ]"
-    >
-      <button
-        @click="closeAlert"
-        class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
-      >
-        ×
-      </button>
-      <p class="mb-4">{{ alert.text }}</p>
-      <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 "
-        @click="closeAlert"
-      >
-        OK
-      </button>
-    </div>
-  </div>
+    :alert="alert"
+    :displayMode="displayMode"
+    :closeAlert="closeAlert"
+  />
 </template>
 <script setup>
 // ─────────────────────────────────────
 // ✅ Imports
 // ─────────────────────────────────────
 import { ref, onMounted, watch, computed, reactive } from 'vue'
-import TeamInputs from '../components/TeamInputs.vue'
+import TeamInputs from '../components/brackets/TeamInputs.vue'
+import AlertDialog from '../components/AlertComponent.vue'
+import SaveButton from '../components/SaveButton.vue'
 
 // ─────────────────────────────────────
 // ✅ Props
@@ -74,9 +49,9 @@ const isDarkMode = computed(() => props.displayMode === 'dark')
 // ─────────────────────────────────────
 // ✅ Reactive State
 // ─────────────────────────────────────
-const teams = ref([])                 // List of all teams
-const teamImages = ref([])           // Preview URLs for team images
-const teamFlags = ref([])            // Preview URLs for team flags
+const teams = ref([]) // List of all teams
+const teamImages = ref([]) // Preview URLs for team images
+const teamFlags = ref([]) // Preview URLs for team flags
 
 const alert = reactive({
   showAlert: false,
@@ -120,7 +95,7 @@ const initializeTeams = () => {
 const openTeamImageOrFlagDialog = async (index, type) => {
   try {
     const result = await window.myAPI.openFileDialog({
-      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }]
+      filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }],
     })
 
     if (result.canceled || !result.filePaths.length) return
@@ -145,7 +120,6 @@ const openTeamImageOrFlagDialog = async (index, type) => {
   }
 }
 
-
 // ─────────────────────────────────────
 // ✅ Remove Images
 // ─────────────────────────────────────
@@ -160,7 +134,6 @@ const removeTeamImageOrFlag = (index, type) => {
   targetList.value[index] = ''
   teams.value[index][teamProp] = ''
 }
-
 
 // ─────────────────────────────────────
 // ✅ Save & Load to/from Disk
@@ -225,9 +198,13 @@ const loadTeamsFromCache = async () => {
 // ✅ Watchers
 // ─────────────────────────────────────
 // Auto save cache on any team change
-watch(teams, () => {
-  window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
-}, { deep: true })
+watch(
+  teams,
+  () => {
+    window.myAPI.saveTeamsCache(JSON.stringify(teams.value))
+  },
+  { deep: true },
+)
 
 // ─────────────────────────────────────
 // ✅ Lifecycle Hook
@@ -237,4 +214,3 @@ onMounted(() => {
   loadTeamsFromCache()
 })
 </script>
-

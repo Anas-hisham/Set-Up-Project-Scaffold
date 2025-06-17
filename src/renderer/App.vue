@@ -58,8 +58,6 @@ import AppToolbar from './components/main/AppToolbar.vue'
 import MainContent from './components/main/MainContent.vue'
 import UpdateModal from './components/main/UpdateModal.vue'
 
-
-
 /* -------------------- Router -------------------- */
 const router = useRouter()
 const route = useRoute()
@@ -115,6 +113,8 @@ onMounted(async () => {
     window.myAPI.onUpdateDownloaded(() => {
       updateInfo.value.downloaded = true
       updateInfo.value.downloading = false
+      updateInfo.value.show = false
+      window.myAPI.installUpdate()
     })
 
     // 2. Load saved settings
@@ -167,7 +167,7 @@ watch(
       window.myAPI.logError(`Error saving settings: ${err.message}`)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // Track last viewed route
@@ -178,7 +178,7 @@ watch(
     if (newPath !== '/settings') {
       settings.value.viewBeforeSetting = newPath
     }
-  }
+  },
 )
 
 /* -------------------- Settings Handlers -------------------- */
@@ -189,27 +189,24 @@ function setSettings(newSettings) {
 async function resetSettings() {
   await window.myAPI.setCustomSavePath('')
   const path = await window.myAPI.getDefaultSavePath()
-  const currentViews = settings.value.views
+  const allVisibleViews = allViews.value.map((view) => ({ ...view, visible: true }))
 
   settings.value = {
     ...defaultSettings,
     savePath: path,
-    views: currentViews,
+    views: allVisibleViews,
+    lastView: settings.value.lastView,
   }
 }
 
 function openSettings() {
   if (route.path === '/settings') {
     const backTo = settings.value.viewBeforeSetting
-    const isBackVisible = settings.value.views.find(
-      (v) => v.visible && v.path === backTo
-    )
+    const isBackVisible = settings.value.views.find((v) => v.visible && v.path === backTo)
     if (isBackVisible) {
       router.push(backTo)
     } else {
-      const fallback = settings.value.views.find(
-        (v) => v.path !== '/settings' && v.visible
-      )
+      const fallback = settings.value.views.find((v) => v.path !== '/settings' && v.visible)
       if (fallback) router.push(fallback.path)
     }
   } else {
@@ -227,13 +224,5 @@ function downloadUpdate() {
   updateInfo.value.downloading = true
   updateInfo.value.wasHandled = true
   window.myAPI.downloadUpdate()
-
-  window.myAPI.onUpdateDownloaded(() => {
-    updateInfo.value.downloaded = true
-    updateInfo.value.downloading = false
-    updateInfo.value.show = false
-    window.myAPI.installUpdate()
-  })
 }
 </script>
-

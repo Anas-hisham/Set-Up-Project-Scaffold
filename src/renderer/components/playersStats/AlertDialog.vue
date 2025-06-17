@@ -5,10 +5,9 @@
     @click.self="onClose"
   >
     <div
-      class="relative p-6 rounded shadow-lg w-100 text-center"
+      class="relative p-6 shadow-lg w-80 text-center"
       :class="[displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
-      <!-- Close Button -->
       <button
         @click="onClose"
         class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
@@ -16,10 +15,10 @@
         ×
       </button>
 
-      <p class="mb-4">{{ text }}</p>
+      <p class="mb-4">{{ alertText }}</p>
 
       <button
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
         @click="onClose"
       >
         OK
@@ -27,12 +26,15 @@
     </div>
   </div>
 </template>
-<script setup>
 
-const props = defineProps({
+<script setup>
+defineProps({
+  displayMode: {
+    type: String,
+    default: 'light'
+  },
   showAlert: Boolean,
-  text: String,
-  displayMode: String,
+  alertText: String,
   onClose: Function
-})
+});
 </script>

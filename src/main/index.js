@@ -1,11 +1,11 @@
 /* eslint-disable no-undef */
-import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { app, dialog, ipcMain } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import Store from 'electron-store'
 import pkg from 'electron-updater'
-
+import { createWindow, getMainWindow } from './windowManager.js'
 // ======================
 // Constants & Initial Setup
 // ======================
@@ -16,7 +16,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // ======================
 // Global Variables
 // ======================
-let mainWindow
 let customSavePath = store.get('customSavePath') || app.getPath('userData')
 
 // ======================
@@ -49,28 +48,6 @@ function appendToLog(message) {
 
 // Initialize file system structure
 ensureLogExist(customSavePath)
-
-// ======================
-// Window Management
-// ======================
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 600,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: false,
-    },
-  })
-
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173')
-    mainWindow.webContents.openDevTools()
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'))
-  }
-}
 
 // ======================
 // IPC Handlers - Path Management
@@ -136,6 +113,7 @@ ipcMain.handle('savePlayer', async (_event, data) => {
   }
 })
 
+// Matches Data
 ipcMain.handle('loadMatchesCache', () => store.get('matchesCache'))
 ipcMain.handle('saveMatchesCache', (_event, data) => {
   store.set('matchesCache', JSON.parse(data))

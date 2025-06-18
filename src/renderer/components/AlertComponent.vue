@@ -1,41 +1,42 @@
 <script setup>
-defineProps({
+const props = defineProps({
   alert: {
     type: Object,
-    required: true
+    required: true,
   },
   displayMode: {
     type: String,
-    default: 'dark'
+    default: 'dark',
   },
   closeAlert: {
     type: Function,
-    required: true
-  }
+    required: true,
+  },
 })
 </script>
 
 <template>
   <div
+    v-if="props.alert.showAlert"
     class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-    @click.self="closeAlert"
+    @click.self="props.closeAlert"
   >
     <div
       class="relative p-6 shadow-lg w-80 text-center"
-      :class="[displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
+      :class="[props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
-      <!-- Close Button -->
       <button
-        @click="closeAlert"
+        @click="props.closeAlert"
         class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"
       >
         ×
       </button>
-      <p class="mb-4">{{ alert.text }}</p>
+
+      <p class="mb-4">{{ props.alert.text }}</p>
 
       <button
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
-        @click="closeAlert"
+        @click="props.closeAlert"
       >
         OK
       </button>

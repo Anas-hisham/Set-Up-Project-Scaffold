@@ -1,32 +1,36 @@
 <template>
   <div class="grid gap-6 p-4 -lg">
     <PlayerInputField
-      v-model="player.playerName"
+      :value="player.playerName"
       label="Player Name"
       placeholder="Player Name"
       :displayMode="displayMode"
+      :onInputChange="(val) => (player.playerName = val)"
     />
 
     <PlayerInputField
-      v-model="player.teamName"
+      :value="player.teamName"
       label="Team Name"
       placeholder="Team Name"
       :displayMode="displayMode"
+      :onInputChange="(val) => (player.teamName = val)"
     />
 
     <PlayerInputField
-      v-model="player.favouriteWeapon"
+      :value="player.favouriteWeapon"
       label="Favorite Weapon"
       placeholder="Favorite Weapon"
       :displayMode="displayMode"
+      :onInputChange="(val) => (player.favouriteWeapon = val)"
     />
 
     <PlayerInputField
-      v-model="player.economyScore"
+      :value="player.economyScore"
       label="Economy Score"
       placeholder="Economy Score"
       :displayMode="displayMode"
       type="number"
+      :onInputChange="(val) => (player.economyScore = Number(val))"
     />
 
     <div class="grid gap-2">
@@ -64,27 +68,30 @@
     </div>
 
     <PlayerInputField
-      v-model="player.kills"
+      :value="player.kills"
       label="Kills"
       placeholder="Kills"
       :displayMode="displayMode"
       type="number"
+      :onInputChange="(val) => (player.kills = Number(val))"
     />
 
     <PlayerInputField
-      v-model="player.deaths"
+      :value="player.deaths"
       label="Deaths"
       placeholder="Deaths"
       :displayMode="displayMode"
       type="number"
+      :onInputChange="(val) => (player.deaths = Number(val))"
     />
 
     <PlayerInputField
-      v-model="player.assists"
+      :value="player.assists"
       label="Assists"
       placeholder="Assists"
       :displayMode="displayMode"
       type="number"
+      :onInputChange="(val) => (player.assists = Number(val))"
     />
   </div>
 </template>

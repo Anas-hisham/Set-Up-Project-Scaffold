@@ -77,11 +77,11 @@
   </div>
 
   <AlertDialog
-    :showAlert="alert.showAlert"
-    :text="alert.text"
-    :displayMode="settings.displayMode"
-    :onClose="closeAlert"
+    :alert="alert"
+    :displayMode="'dark'"
+    :closeAlert="closeAlert"
   />
+
 
   <ConfirmDialog
     :show="confirmDialog.show"
@@ -98,7 +98,7 @@ import { ref, onMounted, computed, watch, reactive } from 'vue'
 import DisplayModeSelector from '../components/settings/DisplayModeSelector.vue'
 import NavigationModeSelector from '../components/settings/NavigationModeSelector.vue'
 import SavePathInput from '../components/settings/SavePathInput.vue'
-import AlertDialog from '../components/settings/AlertDialog.vue'
+import AlertDialog from '../components/AlertComponent.vue'
 import ConfirmDialog from '../components/settings/ConfirmDialog.vue'
 import ManageViews from '../components/settings/ManageViews.vue'
 import ActionButtons from '../components/settings/ActionButtons.vue'
@@ -116,7 +116,10 @@ const { settings, allViews, setSettings, resetSettings, displayMode } = definePr
 })
 
 // ================== State ==================
-const alert = reactive({ showAlert: false, text: '' })
+const alert = reactive({
+  showAlert: false,
+  text: '',
+})
 const confirmDialog = reactive({ show: false, message: '', resolve: null })
 const folderPath = ref('')
 const newPresetName = ref('')

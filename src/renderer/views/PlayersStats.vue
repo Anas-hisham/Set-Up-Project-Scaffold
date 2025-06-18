@@ -19,11 +19,11 @@
   <SaveButton title="Save Players" :onClick="savePlayers" />
 
   <AlertDialog
-    :displayMode="displayMode"
-    :showAlert="alert.showAlert"
-    :alertText="alert.text"
-    :onClose="closeAlert"
+    :alert="alert"
+    :displayMode="'dark'"
+    :closeAlert="closeAlert"
   />
+
 </template>
 
 <script setup>
@@ -32,7 +32,7 @@
 // ─────────────────────────────────────
 import { ref, reactive, watch, onMounted } from 'vue'
 import PlayerStatsTitle from '../components/playersStats/PlayerStatsTitle.vue'
-import AlertDialog from '../components/playersStats/AlertDialog.vue'
+import AlertDialog from '../components/AlertComponent.vue'
 import SaveButton from '../components/SaveButton.vue'
 import PlayerStatsForm from '../components/playersStats/PlayerStatsForm.vue'
 
@@ -80,7 +80,6 @@ function showAlert(text) {
   alert.showAlert = true
 }
 
-// Close alert box
 function closeAlert() {
   alert.showAlert = false
 }

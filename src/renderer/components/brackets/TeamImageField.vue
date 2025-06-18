@@ -3,20 +3,20 @@
     class="flex justify-between lg:col-span-2 px-4 h-14 items-center gap-3 md:col-span-2"
     :class="displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'"
   >
-    <span class="text-sm">Team Flag</span>
-    <div v-if="teamFlag" class="flex items-center gap-2">
+    <span class="text-sm">Team Image</span>
+    <div v-if="teamImage" class="flex items-center gap-2">
       <img
-        :src="teamFlag"
-        alt="Flag"
+        :src="teamImage"
+        alt="Team Image"
         class="w-12 h-12 object-cover cursor-pointer"
-        @click="onAddClick(index, 'flag')"
-        title="Click to change flag"
+        @click="onAddClick(index, 'image')"
+        title="Click to change image"
       />
       <button
         type="button"
         class="text-red-500 font-semibold hover:underline"
-        @click="onRemoveClick(index, 'flag')"
-        title="Delete flag"
+        @click="onRemoveClick(index, 'image')"
+        title="Delete image"
       >
         Delete
       </button>
@@ -25,7 +25,7 @@
       v-else
       class="font-semibold cursor-pointer"
       :class="displayMode === 'dark' ? 'text-green-400' : 'text-green-600'"
-      @click="onAddClick(index, 'flag')"
+      @click="onAddClick(index, 'image')"
     >
       + ADD
     </button>
@@ -34,7 +34,7 @@
 
 <script setup>
 const props = defineProps({
-  teamFlag: String,
+  teamImage: String,
   displayMode: String,
   index: Number,
   onAddClick: Function,

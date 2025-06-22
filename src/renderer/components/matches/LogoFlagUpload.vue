@@ -30,7 +30,8 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex justify-between items-center border px-4 py-2">
+  <div class="flex justify-between items-center border px-4 py-2"
+  >
     <span class="opacity-60">{{ side === 'left' ? 'Left' : 'Right' }} Team {{ type === 'logo' ? 'Logo' : 'Flag' }}</span>
     <div class="flex items-center gap-2">
       <img

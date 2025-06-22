@@ -15,29 +15,27 @@
       />
     </div>
   </div>
+  <div class="flex justify-around">
+    <SaveButton title="Save Players" :onClick="savePlayers" />
+    <clearDataButton title=" Clear Input Data" :onClick="clearData" />
+  </div>
 
-  <SaveButton title="Save Players" :onClick="savePlayers" />
-
-  <AlertDialog
-    :alert="alert"
-    :displayMode="'dark'"
-    :closeAlert="closeAlert"
-  />
-
+  <AlertDialog :alert="alert" :displayMode="'dark'" :closeAlert="closeAlert" />
 </template>
 
 <script setup>
 // ─────────────────────────────────────
-// ✅ Imports
+// Imports
 // ─────────────────────────────────────
 import { ref, reactive, watch, onMounted } from 'vue'
 import PlayerStatsTitle from '../components/playersStats/PlayerStatsTitle.vue'
 import AlertDialog from '../components/AlertComponent.vue'
 import SaveButton from '../components/SaveButton.vue'
+import clearDataButton from '../components/clearDataButton.vue'
 import PlayerStatsForm from '../components/playersStats/PlayerStatsForm.vue'
 
 // ─────────────────────────────────────
-// ✅ Props
+// Props
 // ─────────────────────────────────────
 const props = defineProps({
   displayMode: {
@@ -47,7 +45,7 @@ const props = defineProps({
 })
 
 // ─────────────────────────────────────
-// ✅ Reactive State
+// Reactive State
 // ─────────────────────────────────────
 
 const players = ref([
@@ -71,7 +69,7 @@ const alert = reactive({
 })
 
 // ─────────────────────────────────────
-// ✅ Alert Handlers
+// Alert Handlers
 // ─────────────────────────────────────
 
 // Show alert with custom message
@@ -85,7 +83,7 @@ function closeAlert() {
 }
 
 // ─────────────────────────────────────
-// ✅ Image Handling
+// Image Handling
 // ─────────────────────────────────────
 
 // Open image file dialog and preview image
@@ -127,7 +125,7 @@ function removeHeroImage(index) {
 }
 
 // ─────────────────────────────────────
-// ✅ Save & Load Players
+// Save & Load Players
 // ─────────────────────────────────────
 
 // Save player data (only first player)
@@ -175,14 +173,37 @@ function loadCachedPlayers() {
 }
 
 // ─────────────────────────────────────
-// ✅ Lifecycle Hooks
+// Clear all players data and images
+// ─────────────────────────────────────
+function clearData() {
+  // Revoke any existing object URLs
+  heroImages.value.forEach(img => {
+    if (img) URL.revokeObjectURL(img);
+  });
+
+  players.value = [{
+    playerName: '',
+    teamName: '',
+    favouriteWeapon: '',
+    economyScore: '',
+    heroImage: '',
+    kills: '',
+    deaths: '',
+    assists: '',
+  }];
+
+  heroImages.value = [''];
+}
+
+// ─────────────────────────────────────
+// Lifecycle Hooks
 // ─────────────────────────────────────
 onMounted(() => {
   loadCachedPlayers()
 })
 
 // ─────────────────────────────────────
-// ✅ Watchers
+// Watchers
 // ─────────────────────────────────────
 // Save cache whenever players change
 watch(

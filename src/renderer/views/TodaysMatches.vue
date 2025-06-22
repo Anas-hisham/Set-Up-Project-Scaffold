@@ -1,15 +1,58 @@
+
+
+<template>
+  <div :class="displayMode === 'light' ? 'light-mode' : 'dark-mode'">
+    <h1
+      class="mt-12 text-4xl font-bold text-center mb-8"
+      :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
+    >
+      Today's Matches
+    </h1>
+
+    <div class="px-4 py-3 mb-10">
+      <!-- Info Section -->
+      <InfoSection :matchInfo="matchInfo" :displayMode="displayMode" />
+
+      <!-- Matches Sections -->
+      <MatchSection
+        v-for="(match, matchIndex) in matches"
+        :key="matchIndex"
+        :match="match"
+        :matchIndex="matchIndex"
+        :displayMode="displayMode"
+        :openImageDialog="openImageDialog"
+        :removeImage="removeImage"
+      />
+    </div>
+
+    <!-- Save Button -->
+
+    <div class="flex justify-around">
+      <SaveButton title="Save Matches" :onClick="saveMatches" />
+      <clearDataButton title=" Clear Input Data" :onClick="clearData" />
+    </div>
+  </div>
+
+  <AlertComponent
+    v-if="alert.showAlert"
+    :alert="alert"
+    :displayMode="displayMode"
+    :closeAlert="closeAlert"
+  />
+</template>
 <script setup>
-/* -----------------------------------------------
-✅ Imports
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Imports
+// ─────────────────────────────────────
 import { ref, reactive, watch, onMounted } from 'vue'
 import MatchSection from '../components/matches/MatchSection.vue'
 import InfoSection from '../components/matches/InfoSection.vue'
 import SaveButton from '../components/SaveButton.vue'
+import clearDataButton from '../components/clearDataButton.vue'
 import AlertComponent from '../components/AlertComponent.vue'
-/* -----------------------------------------------
-✅ Props
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Props
+// ─────────────────────────────────────
 defineProps({
   displayMode: {
     type: String,
@@ -17,9 +60,9 @@ defineProps({
   },
 })
 
-/* -----------------------------------------------
-✅ Alert state & functions
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Alert state & functions
+// ─────────────────────────────────────
 const alert = reactive({
   showAlert: false,
   text: '',
@@ -34,9 +77,9 @@ function closeAlert() {
   alert.showAlert = false
 }
 
-/* -----------------------------------------------
-✅ Match info & matches state
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Match info & matches state
+// ─────────────────────────────────────
 const matchInfo = ref({
   date: '',
 })
@@ -78,9 +121,9 @@ const matches = ref([
   },
 ])
 
-/* -----------------------------------------------
-✅ Open image dialog and set image
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Open image dialog and set image
+// ─────────────────────────────────────
 async function openImageDialog(matchIndex, field) {
   try {
     const result = await window.myAPI.openFileDialog({
@@ -110,9 +153,9 @@ async function openImageDialog(matchIndex, field) {
   }
 }
 
-/* -----------------------------------------------
-✅ Remove image (file path + display URL)
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Remove image (file path + display URL)
+// ─────────────────────────────────────
 function removeImage(matchIndex, field) {
   const matchKey = matchIndex === 0 ? 'firstMatch' : 'secondMatch'
   const imagesKey = matchIndex === 0 ? 'firstMatchImages' : 'secondMatchImages'
@@ -125,9 +168,9 @@ function removeImage(matchIndex, field) {
   matches.value[matchIndex][imagesKey][field] = ''
 }
 
-/* -----------------------------------------------
-✅ Save matches to file (excluding display URLs)
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Save matches to file (excluding display URLs)
+// ─────────────────────────────────────
 async function saveMatches() {
   try {
     const dataToSave = {
@@ -146,9 +189,9 @@ async function saveMatches() {
   }
 }
 
-/* -----------------------------------------------
-✅ Load saved data from cache
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Load saved data from cache
+// ─────────────────────────────────────
 async function loadDataCache() {
   try {
     const loaded = await window.myAPI.loadMatchesCache()
@@ -156,7 +199,7 @@ async function loadDataCache() {
 
     const parsedData = typeof loaded === 'string' ? JSON.parse(loaded) : loaded
 
-  if (parsedData.info) {
+    if (parsedData.info) {
       matchInfo.value = { ...matchInfo.value, ...parsedData.info }
     }
 
@@ -192,9 +235,9 @@ async function loadDataCache() {
   }
 }
 
-/* -----------------------------------------------
-✅ Load image for a field from saved path
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Load image for a field from saved path
+// ─────────────────────────────────────
 async function loadImageForField(matchIndex, matchKey, field) {
   const path = matches.value[matchIndex][matchKey][field]
   if (!path) return
@@ -212,9 +255,77 @@ async function loadImageForField(matchIndex, matchKey, field) {
   }
 }
 
-/* -----------------------------------------------
-✅ Auto-save to cache when matchInfo or matches change
--------------------------------------------------- */
+// ─────────────────────────────────────
+// Clear all match data and images
+// ─────────────────────────────────────
+function clearData() {
+  // Clear match info
+  matchInfo.value = {
+    date: '',
+  }
+  // Reset matches to initial state
+  matches.value = [
+    {
+      firstMatch: {
+        matchTime: '',
+        leftTeamName: '',
+        rightTeamName: '',
+        leftTeamLogo: '',
+        rightTeamLogo: '',
+        leftTeamFlag: '',
+        rightTeamFlag: '',
+      },
+      firstMatchImages: {
+        leftTeamLogo: '',
+        rightTeamLogo: '',
+        leftTeamFlag: '',
+        rightTeamFlag: '',
+      },
+    },
+    {
+      secondMatch: {
+        matchTime: '',
+        leftTeamName: '',
+        rightTeamName: '',
+        leftTeamLogo: '',
+        rightTeamLogo: '',
+        leftTeamFlag: '',
+        rightTeamFlag: '',
+      },
+      secondMatchImages: {
+        leftTeamLogo: '',
+        rightTeamLogo: '',
+        leftTeamFlag: '',
+        rightTeamFlag: '',
+      },
+    },
+  ]
+
+
+  // Clean up any existing image URLs
+  matches.value.forEach((match, matchIndex) => {
+    const firstImages = match.firstMatchImages
+    const secondImages = match.secondMatchImages
+
+    // Revoke object URLs for first match images
+    Object.keys(firstImages).forEach((field) => {
+      if (firstImages[field]) {
+        URL.revokeObjectURL(firstImages[field])
+      }
+    })
+
+    // Revoke object URLs for second match images
+    Object.keys(secondImages).forEach((field) => {
+      if (secondImages[field]) {
+        URL.revokeObjectURL(secondImages[field])
+      }
+    })
+  })
+}
+
+// ─────────────────────────────────────
+// Auto-save to cache when matchInfo or matches change
+// ─────────────────────────────────────
 watch(
   [() => matchInfo.value, () => matches.value],
   () => {
@@ -230,52 +341,13 @@ watch(
   { deep: true },
 )
 
-/* -----------------------------------------------
-✅ On component mount, load cached data
--------------------------------------------------- */
+// ─────────────────────────────────────
+// On component mount, load cached data
+// ─────────────────────────────────────
 onMounted(() => {
   loadDataCache()
 })
 </script>
-
-<template>
-  <div :class="displayMode === 'light' ? 'light-mode' : 'dark-mode'">
-    <h1
-      class="mt-12 text-4xl font-bold text-center mb-8"
-      :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
-    >
-      Today's Matches
-    </h1>
-
-    <div class="px-4 py-3 mb-10">
-
-      <!-- Info Section -->
-      <InfoSection :matchInfo="matchInfo" :displayMode="displayMode" />
-
-      <!-- Matches Sections -->
-      <MatchSection
-        v-for="(match, matchIndex) in matches"
-        :key="matchIndex"
-        :match="match"
-        :matchIndex="matchIndex"
-        :displayMode="displayMode"
-        :openImageDialog="openImageDialog"
-        :removeImage="removeImage"
-      />
-    </div>
-
-    <!-- Save Button -->
-
-    <SaveButton title="Save Matches" :onClick="saveMatches" />
-  </div>
-
-  <AlertComponent
-    v-if="alert.showAlert"
-    :alert="alert"
-    :displayMode="displayMode"
-    :closeAlert="closeAlert"
-  />
-</template>
 
 <style scoped>
 .dark-mode input[type='date'],

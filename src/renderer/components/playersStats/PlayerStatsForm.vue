@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-6 p-4 -lg">
+  <div class="grid gap-6 p-4 ">
     <PlayerInputField
       :value="player.playerName"
       label="Player Name"
@@ -35,7 +35,7 @@
 
     <div class="grid gap-2">
       <div
-        class="flex justify-between border px-4 h-14 items-center gap-3"
+        class="flex justify-between border px-4 h-14 items-center gap-3 "
         :class="displayMode === 'dark' ? 'text-white border-white' : 'text-black border-black'"
       >
         <span class="text-sm opacity-65">Hero Image</span>

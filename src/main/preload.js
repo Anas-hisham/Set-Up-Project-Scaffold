@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('myAPI', {
@@ -48,6 +47,7 @@ contextBridge.exposeInMainWorld('myAPI', {
   getPresets: () => ipcRenderer.invoke('getPresets'),
   deletePreset: (name) => ipcRenderer.invoke('deletePreset', name),
   renamePreset: (oldName, newName) => ipcRenderer.invoke('renamePreset', oldName, newName),
+  clearLastAppliedPreset: () => ipcRenderer.invoke('clearLastAppliedPreset'),
   clearAllViewPresets: () => ipcRenderer.invoke('clearAllViewPresets'),
 
   // ────────────────────────────────

@@ -58,18 +58,20 @@ import AppToolbar from './components/main/AppToolbar.vue'
 import MainContent from './components/main/MainContent.vue'
 import UpdateModal from './components/main/UpdateModal.vue'
 
-/* -------------------- Router -------------------- */
+/* -------------------- Router Initialization -------------------- */
 const router = useRouter()
 const route = useRoute()
 
-/* -------------------- State: Settings -------------------- */
+/* -------------------- State: Application Settings -------------------- */
+// Default settings configuration
 const defaultSettings = {
-  displayMode: 'dark',
-  navMode: 'full',
-  savePath: '',
-  lastView: '/welcome',
-  viewBeforeSetting: '/welcome',
+  displayMode: 'dark', // Default theme (dark/light)
+  navMode: 'full', // Navigation mode (full/mini)
+  savePath: '', // Custom save path for data
+  lastView: '/welcome', // Last viewed page
+  viewBeforeSetting: '/welcome', // Previous view before settings
   views: [
+    // Available application views
     { title: 'Brackets View', path: '/brackets', visible: true },
     { title: 'Players Stats', path: '/players', visible: true },
     { title: "Today's Matches", path: '/matches', visible: true },
@@ -77,39 +79,47 @@ const defaultSettings = {
   ],
 }
 
+// Reactive settings object initialized with defaults
 const settings = ref({ ...defaultSettings })
 
-/* -------------------- State: Update Info -------------------- */
+/* -------------------- State: Update Information -------------------- */
+// Reactive object to track update status
 const updateInfo = ref({
-  show: false,
-  currentVersion: '',
-  newVersion: '',
-  progress: 0,
-  downloading: false,
-  downloaded: false,
-  wasHandled: false,
+  show: false, // Whether to show update modal
+  currentVersion: '', // Currently installed version
+  newVersion: '', // Available new version
+  progress: 0, // Download progress percentage
+  downloading: false, // Whether update is downloading
+  downloaded: false, // Whether update is downloaded
+  wasHandled: false, // Whether user has responded to update
 })
 
-/* -------------------- Computed -------------------- */
+/* -------------------- Computed Properties -------------------- */
+// Get only visible views from settings
 const visibleViews = computed(() => settings.value.views.filter((v) => v.visible))
+// Get all views (including hidden ones)
 const allViews = computed(() => settings.value.views)
+// Get current view title from route meta or default to 'Settings'
 const currentTitle = computed(() => route.meta?.title || 'Settings')
 
-/* -------------------- Lifecycle -------------------- */
+/* -------------------- Lifecycle Hooks -------------------- */
 onMounted(async () => {
   try {
-    // 1. Attach update listeners
+    // 1. Set up Electron update event listeners
     window.myAPI.onUpdateAvailable((_, info) => {
+      // Show update modal if not already handled
       if (!updateInfo.value.wasHandled) {
         updateInfo.value.show = true
         updateInfo.value.newVersion = info?.version
       }
     })
 
+    // Track download progress
     window.myAPI.onDownloadProgress((percent) => {
       updateInfo.value.progress = percent
     })
 
+    // Handle update downloaded event
     window.myAPI.onUpdateDownloaded(() => {
       updateInfo.value.downloaded = true
       updateInfo.value.downloading = false
@@ -117,38 +127,42 @@ onMounted(async () => {
       window.myAPI.installUpdate()
     })
 
-    // 2. Load saved settings
+    // 2. Load saved settings from persistent storage
     const savedSettings = await window.myAPI.getViewSettingsCache()
 
     if (savedSettings) {
+      // Merge saved settings with defaults, preserving visibility states
       const mergedViews = defaultSettings.views.map((defaultView) => {
         const savedView = savedSettings.views?.find((v) => v.title === defaultView.title)
         return savedView ? { ...defaultView, visible: savedView.visible } : defaultView
       })
 
+      // Update settings with merged values
       settings.value = {
         ...defaultSettings,
         ...savedSettings,
         views: mergedViews,
       }
 
+      // Handle navigation based on saved settings
       const last = settings.value.lastView
-      const isVisible = (path) => visibleViews.value.some((v) => v.path === path)
+      const isVisible = (path) => visibleViews.value.some((view) => view.path === path)
 
       if (last === '/settings' && isVisible('/settings')) {
         router.push('/settings')
       } else if (last && isVisible(last) && route.path !== last) {
-        router.push(last)
+        router.push(last) // Navigate to last viewed page
       } else if (!isVisible(route.path)) {
+        // If current route isn't visible, go to first visible view
         const firstVisible = visibleViews.value[0]
         if (firstVisible) router.push(firstVisible.path)
       }
     }
 
-    // 3. Get current version
+    // 3. Get current application version
     updateInfo.value.currentVersion = await window.myAPI.getAppVersion()
 
-    // 4. Check for updates
+    // 4. Check for available updates
     await window.myAPI.checkForUpdate()
   } catch (err) {
     window.myAPI.logError(`Error loading settings: ${err.message}`)
@@ -156,11 +170,12 @@ onMounted(async () => {
 })
 
 /* -------------------- Watchers -------------------- */
-// Auto-save settings
+// Auto-save settings when they change
 watch(
   settings,
   async (newSettings) => {
     try {
+      // Convert to plain object and save
       const plain = JSON.parse(JSON.stringify(newSettings))
       await window.myAPI.saveViewSettingsCache(plain)
     } catch (err) {
@@ -170,27 +185,37 @@ watch(
   { deep: true },
 )
 
-// Track last viewed route
+// Track route changes to update last viewed page
 watch(
   () => route.path,
   (newPath) => {
     settings.value.lastView = newPath
+    // Remember view before settings for back navigation
     if (newPath !== '/settings') {
       settings.value.viewBeforeSetting = newPath
     }
   },
 )
 
+
 /* -------------------- Settings Handlers -------------------- */
+
+// Updates application settings
 function setSettings(newSettings) {
   settings.value = { ...settings.value, ...newSettings }
 }
 
+// Resets settings to defaults
+
 async function resetSettings() {
+  // Reset custom save path
   await window.myAPI.setCustomSavePath('')
+  // Get default save path
   const path = await window.myAPI.getDefaultSavePath()
+  // Make all views visible
   const allVisibleViews = allViews.value.map((view) => ({ ...view, visible: true }))
 
+  // Reset settings while preserving lastView
   settings.value = {
     ...defaultSettings,
     savePath: path,
@@ -199,26 +224,37 @@ async function resetSettings() {
   }
 }
 
+// Toggles settings view or returns to previous view
+
 function openSettings() {
   if (route.path === '/settings') {
-    const backTo = settings.value.viewBeforeSetting
-    const isBackVisible = settings.value.views.find((v) => v.visible && v.path === backTo)
+    // If already in settings, go back to previous view
+    const previousViewPath = settings.value.viewBeforeSetting
+    const isBackVisible = settings.value.views.find((v) => v.visible && v.path === previousViewPath)
+
     if (isBackVisible) {
-      router.push(backTo)
+      router.push(previousViewPath)
     } else {
-      const fallback = settings.value.views.find((v) => v.path !== '/settings' && v.visible)
-      if (fallback) router.push(fallback.path)
+      // If previous view isn't visible, go to first visible view
+      const defaultView = settings.value.views.find((v) => v.path !== '/settings' && v.visible)
+      if (defaultView) router.push(defaultView.path)
     }
   } else {
+    // Navigate to settings
     router.push('/settings')
   }
 }
 
 /* -------------------- Update Handlers -------------------- */
+
+// Cancels the pending update
+
 function cancelUpdate() {
   updateInfo.value.show = false
   updateInfo.value.wasHandled = true
 }
+
+// Initiates update download
 
 function downloadUpdate() {
   updateInfo.value.downloading = true

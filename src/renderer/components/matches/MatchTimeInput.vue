@@ -2,22 +2,23 @@
 defineProps({
   match: {
     type: Object,
-    required: true
+    required: true,
   },
   matchIndex: {
     type: Number,
-    required: true
+    required: true,
   },
   displayMode: {
     type: String,
-    default: 'dark'
-  }
-});
+    default: 'dark',
+  },
+})
 </script>
 
 <template>
   <div class="relative" :class="displayMode === 'dark' ? 'text-white' : 'text-black'">
     <label
+      v-if="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch'].matchTime !== ''"
       class="text-sm font-semibold block mb-1"
       :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
     >
@@ -29,7 +30,7 @@ defineProps({
         :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
       ></i>
       <input
-        type="time"
+        type="text"
         placeholder="Match Time"
         v-model="match[matchIndex === 0 ? 'firstMatch' : 'secondMatch'].matchTime"
         class="pl-8 w-full border py-2 px-2.5 placeholder-opacity-100"

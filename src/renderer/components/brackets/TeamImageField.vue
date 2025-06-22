@@ -1,7 +1,8 @@
 <template>
   <div
-    class="flex justify-between lg:col-span-2 px-4 h-14 items-center gap-3 md:col-span-2"
+    class="flex justify-between lg:col-span-2 px-4 h-14 items-center gap-3 md:col-span-2 cursor-pointer"
     :class="displayMode === 'dark' ? 'bg-[#1f2937] text-white' : 'bg-gray-100 text-black shadow-md'"
+    @click="onAddClick(index, 'image')"
   >
     <span class="text-sm">Team Image</span>
     <div v-if="teamImage" class="flex items-center gap-2">

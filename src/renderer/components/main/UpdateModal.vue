@@ -8,7 +8,6 @@
       class="relative p-6 rounded-xl shadow-lg w-96 text-center"
       :class="displayMode === 'dark' ? 'bg-[#2a3444] text-white' : 'bg-white text-black'"
     >
-      <!-- Close Button -->
       <button
         @click="onCancel"
         class="absolute top-2 right-2 text-gray-400 hover:text-red-600 text-xl font-bold"

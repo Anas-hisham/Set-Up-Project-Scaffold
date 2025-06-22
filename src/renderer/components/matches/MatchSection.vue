@@ -36,7 +36,7 @@ defineProps({
     />
 
     <div
-      class="p-4 mb-6 grid gap-6"
+      class="p-4 grid gap-6"
       :class="displayMode === 'dark' ? 'bg-[#1f2937]' : 'bg-gray-100'"
     >
       <MatchTimeInput

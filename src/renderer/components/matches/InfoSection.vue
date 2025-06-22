@@ -23,6 +23,7 @@ defineProps({
   <!-- Date Input -->
   <div class="p-4 mb-10" :class="displayMode === 'dark' ? 'bg-[#1f2937]' : 'bg-gray-100'">
     <label
+      v-if="(matchInfo.date !== '')"
       class="text-sm font-semibold block mb-1"
       :class="displayMode === 'dark' ? 'text-white' : 'text-black'"
     >
@@ -31,11 +32,10 @@ defineProps({
     <div class="relative">
       <i class="pi pi-pencil absolute left-2.5 top-1/2 -translate-y-1/2"></i>
       <input
-        type="date"
+        type="text"
         placeholder="Date"
         v-model="matchInfo.date"
         class="pl-8 w-full border py-2 px-3"
-        max="9999-12-31"
       />
     </div>
   </div>

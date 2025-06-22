@@ -22,7 +22,10 @@
     </div>
   </div>
 
-  <SaveButton title="Save Teams" :onClick="saveTeamsToDisk" />
+  <div class="flex justify-around">
+    <SaveButton title="Save Teams" :onClick="saveTeamsToDisk" />
+    <clearDataButton title=" Clear Input Data" :onClick="clearData" />
+  </div>
 
   <AlertDialog
     v-if="alert.showAlert"
@@ -33,21 +36,22 @@
 </template>
 <script setup>
 // ─────────────────────────────────────
-// ✅ Imports
+// Imports
 // ─────────────────────────────────────
 import { ref, onMounted, watch, computed, reactive } from 'vue'
 import TeamInputs from '../components/brackets/TeamInputs.vue'
 import AlertDialog from '../components/AlertComponent.vue'
 import SaveButton from '../components/SaveButton.vue'
+import clearDataButton from '../components/clearDataButton.vue'
 
 // ─────────────────────────────────────
-// ✅ Props
+// Props
 // ─────────────────────────────────────
 const props = defineProps({ displayMode: String })
 const isDarkMode = computed(() => props.displayMode === 'dark')
 
 // ─────────────────────────────────────
-// ✅ Reactive State
+// Reactive State
 // ─────────────────────────────────────
 const teams = ref([])
 const teamImages = ref([])
@@ -59,7 +63,7 @@ const alert = reactive({
 })
 
 // ─────────────────────────────────────
-// ✅ Alert Functions
+// Alert Functions
 // ─────────────────────────────────────
 function showAlert(text) {
   alert.text = text
@@ -71,7 +75,7 @@ function closeAlert() {
 }
 
 // ─────────────────────────────────────
-// ✅ Factory: Create a blank team object
+// Factory: Create a blank team object
 // ─────────────────────────────────────
 const createEmptyTeam = () => ({
   teamImage: '',
@@ -81,7 +85,7 @@ const createEmptyTeam = () => ({
 })
 
 // ─────────────────────────────────────
-// ✅ Initialize Teams & UI Placeholders
+// Initialize Teams & UI Placeholders
 // ─────────────────────────────────────
 const initializeTeams = () => {
   teams.value = Array.from({ length: 32 }, createEmptyTeam)
@@ -89,8 +93,9 @@ const initializeTeams = () => {
   teamFlags.value = Array(32).fill('')
 }
 
+
 // ─────────────────────────────────────
-// ✅ Image Handlers
+// Image Handlers
 // ─────────────────────────────────────
 const openTeamImageOrFlagDialog = async (index, type) => {
   try {
@@ -121,7 +126,7 @@ const openTeamImageOrFlagDialog = async (index, type) => {
 }
 
 // ─────────────────────────────────────
-// ✅ Remove Images
+// Remove Images
 // ─────────────────────────────────────
 const removeTeamImageOrFlag = (index, type) => {
   const targetList = type === 'image' ? teamImages : teamFlags
@@ -136,7 +141,7 @@ const removeTeamImageOrFlag = (index, type) => {
 }
 
 // ─────────────────────────────────────
-// ✅ Save & Load to/from Disk
+// Save & Load to/from Disk
 // ─────────────────────────────────────
 const saveTeamsToDisk = async () => {
   try {
@@ -193,9 +198,26 @@ const loadTeamsFromCache = async () => {
     window.myAPI.logError(`Failed to load teams: ${err.message}`)
   }
 }
-
 // ─────────────────────────────────────
-// ✅ Watchers
+// Clear all brackets data and images
+// ─────────────────────────────────────
+function clearData() {
+  // Clean up all object URLs to prevent memory leaks
+  teamImages.value.forEach(img => {
+    if (img) URL.revokeObjectURL(img)
+  })
+
+  teamFlags.value.forEach(flag => {
+    if (flag) URL.revokeObjectURL(flag)
+  })
+
+  // Reset all arrays to initial state
+  initializeTeams()
+
+
+}
+// ─────────────────────────────────────
+// Watchers
 // ─────────────────────────────────────
 // Auto save cache on any team change
 watch(
@@ -207,7 +229,7 @@ watch(
 )
 
 // ─────────────────────────────────────
-// ✅ Lifecycle Hook
+// Lifecycle Hook
 // ─────────────────────────────────────
 onMounted(() => {
   initializeTeams()

@@ -79,30 +79,32 @@ Packages and publishes the app (e.g., GitHub releases, if configured).
 ```bash
 npm run publish
 ```
-### Project Structure
 
+##  Project Structure
+
+```none
 GL Stream
 │
 ├── main/                     # Electron main process files
-│   ├── handlers/             # Event handlers for main process
-│   ├── utils/                # Utility functions for main process
-│   ├── index.js              # Main entry point for Electron app
-│   ├── preload.js            # Preload script for context isolation
-│   └── windowManager.js      # Manages browser windows
+│   ├── handlers/             # Event handlers for Electron
+│   ├── utils/                # Utility functions
+│   ├── index.js              # Main entry point of Electron
+│   ├── preload.js            # Preload script (context isolation)
+│   └── windowManager.js      # Handles window creation and management
 │
-├── renderer/                 # Vue.js frontend application
-│   ├── components/           # Vue components
-│   │   ├── brackets/         # Bracket-related components
-│   │   ├── main/             # Main view components
-│   │   ├── matches/          # Match-related components
-│   │   ├── playersStats/     # Player statistics components
-│   │   ├── settings/         # Settings components
+├── renderer/                 # Vue.js frontend
+│   ├── components/           # Reusable Vue components
+│   │   ├── brackets/         # Components related to brackets
+│   │   ├── main/             # Main UI sections
+│   │   ├── matches/          # Match display and logic
+│   │   ├── playersStats/     # Player statistics UI
+│   │   ├── settings/         # Application settings UI
 │   │
-│   ├── routes/               # Vue router configuration
-│   ├── views/                # Main views/pages
-│   ├── App.vue               # Root Vue component
-│   ├── main.js               # Frontend entry point
+│   ├── routes/               # Vue Router setup
+│   ├── views/                # Pages/views for routes
+│   ├── App.vue               # Root component
+│   ├── main.js               # App entry point
 │   └── style.css             # Global styles
 │
-└── (other root files)        # Likely includes package.json, etc.
+└── (root files)              # package.json, vite.config.js, README.md, etc.
 

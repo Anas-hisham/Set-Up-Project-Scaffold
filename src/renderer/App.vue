@@ -171,9 +171,7 @@ onMounted(async () => {
 
 /* -------------------- Watchers -------------------- */
 // Auto-save settings when they change
-watch(
-  settings,
-  async (newSettings) => {
+watch( settings, async (newSettings) => {
     try {
       // Convert to plain object and save
       const plain = JSON.parse(JSON.stringify(newSettings))
@@ -186,9 +184,7 @@ watch(
 )
 
 // Track route changes to update last viewed page
-watch(
-  () => route.path,
-  (newPath) => {
+watch( () => route.path, (newPath) => {
     settings.value.lastView = newPath
     // Remember view before settings for back navigation
     if (newPath !== '/settings') {

@@ -1,11 +1,6 @@
 <template>
   <div class="mt-10">
-    <h3
-      :class="[
-        'text-xl font-bold mb-4',
-        displayMode === 'light' ? 'text-black' : 'text-white',
-      ]"
-    >
+    <h3 :class="['text-xl font-bold mb-4', displayMode === 'light' ? 'text-black' : 'text-white']">
       Manage Presets
     </h3>
 
@@ -29,6 +24,7 @@
         Save Current
       </button>
     </div>
+
     <div class="py-6 pb-2 space-y-4">
       <div
         v-for="(preset, index) in presetList"
@@ -117,12 +113,7 @@
         >
           <template v-for="(view, i) in tempUpdatedViews" :key="i">
             <div v-if="view.title !== 'Settings'" class="flex items-center justify-between">
-              <span
-                :class="[
-                  'font-medium',
-                  displayMode === 'light' ? 'text-black' : 'text-white',
-                ]"
-              >
+              <span :class="['font-medium', displayMode === 'light' ? 'text-black' : 'text-white']">
                 {{ view.title }}
               </span>
               <input
@@ -144,80 +135,80 @@ export default {
   props: {
     displayMode: {
       type: String,
-      required: true
+      required: true,
     },
     newPresetName: {
       type: String,
-      required: true
+      required: true,
     },
     presetList: {
       type: Array,
-      required: true
+      required: true,
     },
     editingName: {
       type: String,
-      default: ''
+      default: '',
     },
     editedPresetName: {
       type: String,
-      default: ''
+      default: '',
     },
     updatingPreset: {
       type: String,
-      default: ''
+      default: '',
     },
     tempUpdatedViews: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     onNewPresetNameChange: {
       type: Function,
-      required: true
+      required: true,
     },
     onSavePreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onApplyPreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onStartRenaming: {
       type: Function,
-      required: true
+      required: true,
     },
     onConfirmRename: {
       type: Function,
-      required: true
+      required: true,
     },
     onCancelRename: {
       type: Function,
-      required: true
+      required: true,
     },
     onStartUpdatingPreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onConfirmUpdatePreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onCancelUpdatePreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onDeletePreset: {
       type: Function,
-      required: true
+      required: true,
     },
     onToggleView: {
       type: Function,
-      required: true
+      required: true,
     },
     onEditedPresetNameChange: {
       type: Function,
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 }
 </script>

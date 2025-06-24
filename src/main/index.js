@@ -36,7 +36,8 @@ const setCustomSavePathGlobal = (newPath) => {
   newPath = newPath?.trim() || app.getPath('userData') // Ensure we always have a valid path
   customSavePath = newPath
   logFilePath = path.join(customSavePath, 'errors.log')
-  store.set('customSavePath', newPath) // Explicitly update the store
+
+  store.set('customSavePath', newPath)
   ensureLogExist(customSavePath)
 
 }
@@ -96,21 +97,3 @@ app.whenReady()
     console.error('Error during app start:', error)
     appendToLog(`Error during app start: ${error.stack || error.message}`, getLogFilePathGlobal())
   })
-
-// Quit the application when all windows are closed (except on macOS)
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-// Re-create window on macOS when dock icon is clicked and no windows are open
-app.on('activate', () => {
-  if (mainWindow === null) {
-    mainWindow = createWindow()
-    mainWindow.on('closed', () => {
-      mainWindow = null
-    })
-  }
-})
-

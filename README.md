@@ -11,11 +11,19 @@ This is a starter template for building an Electron application using Vue 3 and 
 
 ## Features
 
-- **Vue 3** with Vite as the build tool and dev server
-- Electron main process with secure context isolation and IPC communication
-- Preload script exposing safe API to renderer process
-- Hot-reloading during development for both Electron and Vue
-- Code linting with ESLint (Vue plugin) and formatting with Prettier
+- Modern Stack: Vue 3 + Vite + Electron
+
+- Secure Architecture: Context isolation with preload scripts
+
+- Developer Experience:
+
+   Hot-reloading for both processes
+
+   Linting with ESLint (Vue plugin)
+
+   Code formatting with Prettier
+
+- Production Ready: Build and packaging scripts
 
 ---
 
@@ -23,39 +31,78 @@ This is a starter template for building an Electron application using Vue 3 and 
 
 ### Prerequisites
 
-- Node.js v16+ (recommended)
-- npm or yarn package manager
+Make sure you have the following installed:
+
+- **Node.js** v16 or higher
+- **npm** or **yarn**
+
+---
 
 ### Installation
 
-1. Clone this repository or download the source code
-2. Run:
+1. **Clone** the repository or [download](https://github.com/Anas-hishamSet-Up-Project-Scaffold) the source code.
+2. Open your terminal in the project directory and run:
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-   Builds the Vue renderer process for production.
+### Development Scripts
 
-   ```bash
-   npm run build
-   ```
+Builds the Vue renderer process for production.
 
-   Builds the Vue app (same as build), then launches Electron loading the production build.
-   This simulates the final production app behavior.
+```bash
+npm run build
+```
 
-   ```bash
-   npm run preview
-   ```
+Builds the Vue app (same as build), then launches Electron loading the production build.
+This simulates the final production app behavior.
 
-   Builds the app and packages it
+```bash
+   npm run dev
+```
 
-   ```bash
-   npm run dist
-   ```
+Starts the app in development mode. Launches Vite and Electron concurrently.
 
-   Packages and publishes the app
+```bash
+npm run preview
+```
 
-   ```bash
-   npm run publish
-   ```
+Builds the app and packages it
+
+```bash
+npm run dist
+```
+
+Packages and publishes the app (e.g., GitHub releases, if configured).
+
+```bash
+npm run publish
+```
+### Project Structure
+
+GL Stream
+│
+├── main/                     # Electron main process files
+│   ├── handlers/             # Event handlers for main process
+│   ├── utils/                # Utility functions for main process
+│   ├── index.js              # Main entry point for Electron app
+│   ├── preload.js            # Preload script for context isolation
+│   └── windowManager.js      # Manages browser windows
+│
+├── renderer/                 # Vue.js frontend application
+│   ├── components/           # Vue components
+│   │   ├── brackets/         # Bracket-related components
+│   │   ├── main/             # Main view components
+│   │   ├── matches/          # Match-related components
+│   │   ├── playersStats/     # Player statistics components
+│   │   ├── settings/         # Settings components
+│   │
+│   ├── routes/               # Vue router configuration
+│   ├── views/                # Main views/pages
+│   ├── App.vue               # Root Vue component
+│   ├── main.js               # Frontend entry point
+│   └── style.css             # Global styles
+│
+└── (other root files)        # Likely includes package.json, etc.
+

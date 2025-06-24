@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { appendToLog } from '../utils/fileManager.js' // Assuming fileManager.js is accessible
+import { appendToLog } from '../utils/fileManager.js'
 
 function setupSettingsHandlers(store, getLogFilePathGlobal) {
   // Saves application settings to electron-store.
@@ -85,7 +85,7 @@ function setupSettingsHandlers(store, getLogFilePathGlobal) {
 
   ipcMain.handle('clearLastAppliedPreset', async () => {
     try {
-      store.delete('lastAppliedPreset') 
+      store.delete('lastAppliedPreset')
       return true
     } catch (err) {
       console.error('Failed to Last Applied Preset:', err)

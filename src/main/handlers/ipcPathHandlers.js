@@ -1,6 +1,6 @@
 import { ipcMain, dialog, app } from 'electron'
 import fs from 'fs'
-import { appendToLog } from '../utils/fileManager.js' // Assuming fileManager.js is in the same directory or accessible via path
+import { appendToLog } from '../utils/fileManager.js'
 
 function setupPathHandlers(setCustomSavePathGlobal, getCustomSavePathGlobal, getLogFilePathGlobal) {
   // Handles requests for the default save path.
@@ -20,7 +20,6 @@ function setupPathHandlers(setCustomSavePathGlobal, getCustomSavePathGlobal, get
         fs.mkdirSync(newPath, { recursive: true })
       }
 
-      // Update the custom save path in the Electron-store.
       setCustomSavePathGlobal(newPath)
 
       return { success: true }

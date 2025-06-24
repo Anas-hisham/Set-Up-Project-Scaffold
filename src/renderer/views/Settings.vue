@@ -265,7 +265,7 @@ async function loadPresets() {
 async function deletePreset(name) {
   try {
     await window.myAPI.deletePreset(name)
-    await loadPresets() // Refresh list
+    await loadPresets()
   } catch (error) {
     window.myAPI.logError('Error deleting preset:', error)
   }

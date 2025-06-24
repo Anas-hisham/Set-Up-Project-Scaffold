@@ -19,11 +19,11 @@
 const props = defineProps({
   onReset: {
     type: Function,
-    required: true
+    required: true,
   },
   onClear: {
     type: Function,
-    required: true
-  }
+    required: true,
+  },
 })
 </script>

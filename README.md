@@ -49,32 +49,31 @@ npm install
 
 ### Development Scripts
 
+Starts the app in development mode. Launches Vite and Electron concurrently.
+
+```bash
+npm run dev
+```
+
 Builds the Vue renderer process for production.
 
 ```bash
 npm run build
 ```
 
-Builds the Vue app (same as build), then launches Electron loading the production build.
-This simulates the final production app behavior.
-
-```bash
-   npm run dev
-```
-
-Starts the app in development mode. Launches Vite and Electron concurrently.
+Builds the app using vite build, then launches Electron with the production files to simulate the final app behavior.
 
 ```bash
 npm run preview
 ```
 
-Builds the app and packages it
+Builds the app and packages it using electron-builder.
 
 ```bash
 npm run dist
 ```
 
-Packages and publishes the app (e.g., GitHub releases, if configured).
+Packages and publishes the app (e.g., GitHub Releases, if configured).
 
 ```bash
 npm run publish
@@ -107,4 +106,3 @@ GL Stream
 │   └── style.css             # Global styles
 │
 └── (root files)              # package.json, vite.config.js, README.md, etc.
-

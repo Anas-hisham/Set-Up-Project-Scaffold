@@ -40,7 +40,7 @@ Make sure you have the following installed:
 
 ### Installation
 
-1. **Clone** the repository or [download](https://github.com/Anas-hishamSet-Up-Project-Scaffold) the source code.
+1. **Clone** the repository or [download](https://github.com/Anas-hisham/Set-Up-Project-Scaffold) the source code.
 2. Open your terminal in the project directory and run:
 
 ```bash

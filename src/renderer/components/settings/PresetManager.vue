@@ -5,6 +5,12 @@
     </h3>
 
     <div class="flex gap-2 mb-4">
+      <!--
+        We use :value and @input instead of v-model because newPresetName is a prop,
+        and props in Vue are read-only by design. Using v-model would try to mutate
+        the prop directly, which is not allowed and would throw an error.
+        Instead, we emit the input value via onNewPresetNameChange to update the parent.
+      -->
       <input
         :value="newPresetName"
         @input="onNewPresetNameChange($event.target.value)"
@@ -119,8 +125,8 @@
               <input
                 type="checkbox"
                 :checked="view.visible"
+                v-model="tempUpdatedViews[i].visible"
                 class="w-5 h-5"
-                @change="onToggleView(i, $event)"
               />
             </div>
           </template>
@@ -130,85 +136,79 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    displayMode: {
-      type: String,
-      required: true,
-    },
-    newPresetName: {
-      type: String,
-      required: true,
-    },
-    presetList: {
-      type: Array,
-      required: true,
-    },
-    editingName: {
-      type: String,
-      default: '',
-    },
-    editedPresetName: {
-      type: String,
-      default: '',
-    },
-    updatingPreset: {
-      type: String,
-      default: '',
-    },
-    tempUpdatedViews: {
-      type: Array,
-      default: () => [],
-    },
-    onNewPresetNameChange: {
-      type: Function,
-      required: true,
-    },
-    onSavePreset: {
-      type: Function,
-      required: true,
-    },
-    onApplyPreset: {
-      type: Function,
-      required: true,
-    },
-    onStartRenaming: {
-      type: Function,
-      required: true,
-    },
-    onConfirmRename: {
-      type: Function,
-      required: true,
-    },
-    onCancelRename: {
-      type: Function,
-      required: true,
-    },
-    onStartUpdatingPreset: {
-      type: Function,
-      required: true,
-    },
-    onConfirmUpdatePreset: {
-      type: Function,
-      required: true,
-    },
-    onCancelUpdatePreset: {
-      type: Function,
-      required: true,
-    },
-    onDeletePreset: {
-      type: Function,
-      required: true,
-    },
-    onToggleView: {
-      type: Function,
-      required: true,
-    },
-    onEditedPresetNameChange: {
-      type: Function,
-      required: true,
-    },
+<script setup>
+const props = defineProps({
+  displayMode: {
+    type: String,
+    required: true,
   },
-}
+  newPresetName: {
+    type: String,
+    required: true,
+  },
+  presetList: {
+    type: Array,
+    required: true,
+  },
+  editingName: {
+    type: String,
+    default: '',
+  },
+  editedPresetName: {
+    type: String,
+    default: '',
+  },
+  updatingPreset: {
+    type: String,
+    default: '',
+  },
+  tempUpdatedViews: {
+    type: Array,
+    default: () => [],
+  },
+  onNewPresetNameChange: {
+    type: Function,
+    required: true,
+  },
+  onSavePreset: {
+    type: Function,
+    required: true,
+  },
+  onApplyPreset: {
+    type: Function,
+    required: true,
+  },
+  onStartRenaming: {
+    type: Function,
+    required: true,
+  },
+  onConfirmRename: {
+    type: Function,
+    required: true,
+  },
+  onCancelRename: {
+    type: Function,
+    required: true,
+  },
+  onStartUpdatingPreset: {
+    type: Function,
+    required: true,
+  },
+  onConfirmUpdatePreset: {
+    type: Function,
+    required: true,
+  },
+  onCancelUpdatePreset: {
+    type: Function,
+    required: true,
+  },
+  onDeletePreset: {
+    type: Function,
+    required: true,
+  },
+  onEditedPresetNameChange: {
+    type: Function,
+    required: true,
+  },
+})
 </script>

@@ -19,10 +19,10 @@ const props = defineProps({
   <div
     v-if="props.alert.showAlert"
     class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
-    @click.self="props.closeAlert"
+    @click="props.closeAlert"
   >
     <div
-      class="relative p-6 shadow-lg w-80 text-center"
+      class="relative p-6 shadow-lg w-85 text-center"
       :class="[props.displayMode === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black']"
     >
       <button

@@ -6,7 +6,9 @@
     <select
       v-model="settings.navMode"
       class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400"
-      :class="isDark ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+      :class="
+        isDark ? 'bg-gray-900 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
+      "
     >
       <option value="full">Full</option>
       <option value="mini">Mini</option>
@@ -18,5 +20,5 @@
 defineProps({
   settings: Object,
   isDark: Boolean,
-});
+})
 </script>

@@ -23,8 +23,7 @@
         <label class="relative inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
-            :checked="view.visible"
-            @change="onViewVisibilityChange(index, $event)"
+            v-model="views[index].visible"
             class="sr-only peer"
           />
           <div
@@ -50,10 +49,6 @@ const props = defineProps({
   displayMode: {
     type: String,
     default: 'light'
-  },
-  onViewVisibilityChange: {
-    type: Function,
-    required: true
   }
 })
 </script>

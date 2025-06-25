@@ -44,11 +44,7 @@
     <ActionButtons :onReset="fullReset" :onClear="clearInput" />
     <!-- Manage Views -->
 
-    <ManageViews
-      :views="withoutSettings()"
-      :displayMode="settings.displayMode"
-      :onViewVisibilityChange="updateViewVisibility"
-    />
+    <ManageViews :views="withoutSettings()" :displayMode="settings.displayMode" />
 
     <AppliedPresetIndicator :preset="lastAppliedPreset" :displayMode="settings.displayMode" />
 
@@ -71,17 +67,11 @@
       :onConfirmUpdatePreset="confirmUpdatePreset"
       :onCancelUpdatePreset="cancelUpdatePreset"
       :onDeletePreset="deletePreset"
-      :onToggleView="onToggleView"
       :onEditedPresetNameChange="(value) => (editedPresetName = value)"
     />
   </div>
 
-  <AlertDialog
-    :alert="alert"
-    :displayMode="'dark'"
-    :closeAlert="closeAlert"
-  />
-
+  <AlertDialog :alert="alert" :displayMode="'dark'" :closeAlert="closeAlert" />
 
   <ConfirmDialog
     :show="confirmDialog.show"
@@ -129,7 +119,7 @@ const alert = reactive({
 const confirmDialog = reactive({
   show: false, // Dialog visibility
   message: '', // Dialog message
-  resolve: null // Promise resolver
+  resolve: null, // Promise resolver
 })
 
 // Folder path state
@@ -219,7 +209,7 @@ async function fullReset() {
 // ================== Preset Management ==================
 // Compute preset list as array from object
 const presetList = computed(() =>
-  Object.entries(presets.value).map(([name, views]) => ({ name, views })),
+  Object.entries(presets.value).map(([name, views]) => ({ name: name, views: views })),
 )
 
 // Filter out Settings view from all views
@@ -401,18 +391,6 @@ async function confirmRename(oldName) {
   }
 }
 
-// ================== View Toggles ==================
-// Update view visibility in main settings
-async function updateViewVisibility(index, event) {
-  allViews[index].visible = event.target.checked
-  setSettings({ ...settings, views: [...allViews] })
-}
-
-// Update view visibility during preset edit
-async function onToggleView(index, event) {
-  tempUpdatedViews.value[index].visible = event.target.checked
-}
-
 // ================== Cache & Path ==================
 // Clear cached data
 async function clearInput() {
@@ -532,5 +510,3 @@ onMounted(async () => {
   })
 })
 </script>
-
-

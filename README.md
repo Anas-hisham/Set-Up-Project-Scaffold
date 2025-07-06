@@ -62,6 +62,7 @@ This is a starter template for building an Electron application using Vue 3 and 
    
 ## 📁 Project Folder Structure
 
+<pre><code>``` 
 src/
 ├── main/
 │ ├── app/
@@ -92,3 +93,4 @@ src/
 │ ├── views/
 │ ├── App.vue
 │ └── main.js
+ ```</code></pre>

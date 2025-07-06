@@ -63,34 +63,46 @@ This is a starter template for building an Electron application using Vue 3 and 
 ## 📁 Project Folder Structure
 
 <pre><code>``` 
+   
 src/
-├── main/
-│ ├── app/
-│ ├── constants/
-│ ├── handlers/
-│ │ ├── app/
-│ │ ├── cache/
-│ │ └── file/
-│ ├── path/
-│ ├── preload/
-│ ├── settings/
-│ ├── updater/
-│ ├── utils/
-│ ├── Views/
-│ ├── init.js
-│ ├── index.js
-│ └── windowManager.js
-├── renderer/
-│ ├── assets/
-│ ├── components/
-│ ├── composables/
-│ ├── constants/
-│ ├── routes/
-│ ├── services/
-│ ├── stores/
-│ ├── styles/
-│ ├── utils/
-│ ├── views/
-│ ├── App.vue
-│ └── main.js
+├── main/                          # Main process (Electron backend)
+│   ├── config/                    # Configuration files (e.g. env, constants, paths)
+│   ├── constants/                 # Shared constants used in the main process
+│   ├── handlers/                 # IPC handlers for different modules/features
+│   │   ├── app/                   # App lifecycle and control handlers
+│   │   ├── path/                  # File/folder path-related handlers
+│   │   ├── settings/              # Handlers for managing settings
+│   │   ├── updater/               # Auto-update related handlers
+│   │   ├── views/                 # Handlers for custom views
+│   ├── └── index.js              # Main process entry point
+│   ├── preload/                  # Preload scripts (safe bridge between main and renderer)
+│   ├── utils/                    # Utility functions for the main process
+│   │── index.js                  # Main utility export or aggregator
+│   │── init.js                   # Initialization logic (setup configs, handlers, etc.)
+│   └── windowManager.js         # Logic for creating/managing Electron windows
+│
+├── renderer/                     # Renderer process (Vue frontend)
+│   ├── assets/                   # Static assets
+│   │   ├── icons/                # App icons (SVG, PNG, etc.)
+│   │   └── fonts/                # Custom fonts (TTF, WOFF, etc.)
+│   ├── components/              # Reusable Vue components
+│   │   ├── brackets/             # Components specific to the Brackets view
+│   │   ├── common/               # Common reusable UI components
+│   │   ├── customView/           # Components specific to the Custom view
+│   │   ├── layouts/              # Layout wrappers (e.g., header/sidebar layout)
+│   │   ├── matches/              # Components specific to the Matches view
+│   │   ├── playersStats/         # Components specific to the Players Stats view
+│   │   ├── settings/             # Components specific to the Settings view
+│   │   └── viewBuilder/          # Components specific to the View Builder view
+│   ├── composables/              # Vue 3 composables (logic extraction)
+│   ├── constants/                # Frontend constants
+│   ├── routes/                   # Vue Router config
+│   ├── services/                 # Service logic
+│   ├── stores/                   # Global state (Pinia)
+│   ├── styles/                   # Global and modular styles
+│   ├── utils/                    # Utility functions
+│   ├── views/                    # App Views
+│   ├── App.vue                   # Root Vue component
+│   └── main.js                   # Entry point for the Vue app
+
  ```</code></pre>

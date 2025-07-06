@@ -59,3 +59,36 @@ This is a starter template for building an Electron application using Vue 3 and 
    ```bash
    npm run publish
    ```
+   
+## 📁 Project Folder Structure
+
+src/
+├── main/
+│ ├── app/
+│ ├── constants/
+│ ├── handlers/
+│ │ ├── app/
+│ │ ├── cache/
+│ │ └── file/
+│ ├── path/
+│ ├── preload/
+│ ├── settings/
+│ ├── updater/
+│ ├── utils/
+│ ├── Views/
+│ ├── init.js
+│ ├── index.js
+│ └── windowManager.js
+├── renderer/
+│ ├── assets/
+│ ├── components/
+│ ├── composables/
+│ ├── constants/
+│ ├── routes/
+│ ├── services/
+│ ├── stores/
+│ ├── styles/
+│ ├── utils/
+│ ├── views/
+│ ├── App.vue
+│ └── main.js

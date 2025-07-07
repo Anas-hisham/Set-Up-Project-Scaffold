@@ -66,14 +66,14 @@ This is a starter template for building an Electron application using Vue 3 and 
    
 src/
 ├── main/                          # Main process (Electron backend)
-│   ├── config/                    # Configuration files (e.g. env, constants, paths)
+│   ├── config/                    # Manages global config settings
 │   ├── constants/                 # Shared constants used in the main process
 │   ├── handlers/                 # IPC handlers for different modules/features
-│   │   ├── app/                   # App lifecycle and control handlers
+│   │   ├── app/                   # App-level IPC handlers
 │   │   ├── path/                  # File/folder path-related handlers
-│   │   ├── settings/              # Handlers for managing settings
-│   │   ├── updater/               # Auto-update related handlers
-│   │   ├── views/                 # Handlers for custom views
+│   │   ├── settings/              # Handlers for settings view
+│   │   ├── updater/               # Auto-update handlers
+│   │   ├── views/                 # Handlers for views
 │   ├── └── index.js              # Main process entry point
 │   ├── preload/                  # Preload scripts (safe bridge between main and renderer)
 │   ├── utils/                    # Utility functions for the main process
